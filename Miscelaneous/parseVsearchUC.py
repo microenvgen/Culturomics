@@ -47,8 +47,8 @@ def main():
 			clusters[cluster].append([col[8], int(col[8].split('=')[-1])])
 
 	with open('.'.join(args.ucfile.split('.')[:-1]) + '_clusters.txt', 'w') as output:
-		with open('.'.join(args.fasta.split('.')[:-1]) + '_reference.fasta', 'w') as outputfasta:
-			output.write('N\tREF\tMEMBERS\n')
+		with open('.'.join(args.fasta.split('.')[:-1]) + '_representative.fasta', 'w') as outputfasta:
+			output.write('N_Wells\tRepresentative\tMembers\n')
 			for cluster in clusters:
 				output.write(str(len(clusters[cluster])) + '\t')
 				sorted_cluster_by_snvs = sorted(clusters[cluster], key = lambda x: x[1])

@@ -24,6 +24,8 @@ Dependencies:
 	Mothur and vsearch (vserach included in Mothur, https://github.com/mothur/mothur/releases/download/v1.48.0/Mothur.linux_7.zip)
 	Seed database (https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.seed_v138_1.tgz)
 	parseVsearchUC.py, a parsing script for vserach output (must be in BINPATH)
+	mothurDistance2matrix.py, a parsing script for mothur distance output (must be in BINPATH)
+	mergeClusterAndTaxo.py, a parsing script for mothur taxonomy output and clusters (must be in BINPATH)
 
 	NOTE: mothur, vsearch and seed database must all be in BINPATH folder
 
@@ -207,13 +209,13 @@ ${BINPATH}/vsearch --cluster_fast ${OUTPUTNAME}.fasta -id ${CLUSTERINGTHRESHOLD}
 python ${BINPATH}/parseVsearchUC.py ${OUTPUTNAME}".uc" ${OUTPUTNAME}".fasta"
 
 #--Creating dist table and classify sequences
-${BINPATH}/mothur "#align.seqs(candidate=${OUTPUTNAME}_reference.fasta, template=silva.seed_v138_1.align, processors=${PROC} )"
-${BINPATH}/mothur "#dist.seqs(fasta=${OUTPUTNAME}_reference.align, processors=${PROC} )"
-${BINPATH}/mothur "#unique.seqs(fasta=${OUTPUTNAME}_reference.fasta, format=count)"
-${BINPATH}/mothur "#classify.seqs(fasta=${OUTPUTNAME}_reference.unique.fasta, count=${OUTPUTNAME}_reference.count_table, reference=silva.seed_v138_1.align, taxonomy=silva.seed_v138_1.tax)"
+${BINPATH}/mothur "#align.seqs(candidate=${OUTPUTNAME}_representative.fasta, template=silva.seed_v138_1.align, processors=${PROC} )"
+${BINPATH}/mothur "#dist.seqs(fasta=${OUTPUTNAME}_representative.align, processors=${PROC} )"
+${BINPATH}/mothur "#unique.seqs(fasta=${OUTPUTNAME}_representative.fasta, format=count)"
+${BINPATH}/mothur "#classify.seqs(fasta=${OUTPUTNAME}_representative.unique.fasta, count=${OUTPUTNAME}_representative.count_table, representative=silva.seed_v138_1.align, taxonomy=silva.seed_v138_1.tax)"
 
-# rm -fr ${OUTPUTNAME}_reference.align
-# rm -fr ${OUTPUTNAME}_reference.align_report
+# rm -fr ${OUTPUTNAME}_representative.align
+# rm -fr ${OUTPUTNAME}_representative.align_report
 # rm -fr mothur*logfile
 
 #--Reporting files with no sequences
@@ -226,15 +228,22 @@ done
 echo "##########################################################################################"
 
 #--Copy files (only required for cluster running)
-cp ${OUTPUTNAME}".fasta" $DATADIR
-cp ${OUTPUTNAME}".uc" $DATADIR
-cp ${OUTPUTNAME}"_clusters.txt" $DATADIR
-cp ${OUTPUTNAME}"_reference.fasta" $DATADIR
-cp ${OUTPUTNAME}"_reference.dist" $DATADIR
-cp ${OUTPUTNAME}"_reference.count_table" $DATADIR
-cp ${OUTPUTNAME}"_reference.unique.count_table" $DATADIR
-cp ${OUTPUTNAME}"_reference.unique.seed_v138_1.wang.taxonomy" $DATADIR
-cp ${OUTPUTNAME}"_reference.unique.seed_v138_1.wang.tax.summary" $DATADIR
+mv ${OUTPUTNAME}".fasta" ${OUTPUTNAME}"_wells.fasta"
+cp ${OUTPUTNAME}"_wells.fasta" $DATADIR
+# cp ${OUTPUTNAME}".uc" $DATADIR
+cp ${OUTPUTNAME}"_representative.fasta" $DATADIR
+
+${BINPATH}/mothurDistance2matrix.py ${OUTPUTNAME}"_representative.dist" ${OUTPUTNAME}"_representative_dist.tsv"
+cp ${OUTPUTNAME}"_representative_dist.tsv" $DATADIR
+
+${BINPATH}/mergeClusterAndTaxo.py ${OUTPUTNAME}"_representative.unique.seed_v138_1.wang.taxonomy" ${OUTPUTNAME}"_clusters.txt" ${OUTPUTNAME}"_results.tsv"
+cp ${OUTPUTNAME}"_results.tsv" $DATADIR
+
+# cp ${OUTPUTNAME}"_representative.count_table" $DATADIR
+# cp ${OUTPUTNAME}"_clusters.txt" $DATADIR
+# mv ${OUTPUTNAME}"_representative.unique.seed_v138_1.wang.taxonomy" ${OUTPUTNAME}"_representative_taxo.tsv"
+# cp ${OUTPUTNAME}"_representative_taxo.tsv" $DATADIR
+# cp ${OUTPUTNAME}"_representative.unique.seed_v138_1.wang.tax.summary" $DATADIR
 
 #--Unloading python3 in cluster  (only required for cluster running)
 module unload python/python-3.7-intel
