@@ -212,7 +212,7 @@ python ${BINPATH}/parseVsearchUC.py ${OUTPUTNAME}".uc" ${OUTPUTNAME}".fasta"
 ${BINPATH}/mothur "#align.seqs(candidate=${OUTPUTNAME}_representative.fasta, template=silva.seed_v138_1.align, processors=${PROC} )"
 ${BINPATH}/mothur "#dist.seqs(fasta=${OUTPUTNAME}_representative.align, processors=${PROC} )"
 ${BINPATH}/mothur "#unique.seqs(fasta=${OUTPUTNAME}_representative.fasta, format=count)"
-${BINPATH}/mothur "#classify.seqs(fasta=${OUTPUTNAME}_representative.unique.fasta, count=${OUTPUTNAME}_representative.count_table, representative=silva.seed_v138_1.align, taxonomy=silva.seed_v138_1.tax)"
+${BINPATH}/mothur "#classify.seqs(fasta=${OUTPUTNAME}_representative.unique.fasta, count=${OUTPUTNAME}_representative.count_table, reference=silva.seed_v138_1.align, taxonomy=silva.seed_v138_1.tax)"
 
 # rm -fr ${OUTPUTNAME}_representative.align
 # rm -fr ${OUTPUTNAME}_representative.align_report
