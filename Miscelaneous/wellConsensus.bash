@@ -45,6 +45,12 @@ Example:
 
 To modify any of the parameters (including BINPATH) go to Default values section.
 
+
+
+NOTE: when a "N" appears in consensus sequence it means that any base is represented by more than 50% of the reads.
+Usually, this happens when very few reads are available and 50% of reads have one base while the other 50% of reads
+have another. This could indicate that more than one species is being sequenced in the same well. 
+
 ################################################################################
 "
 #--Default values
