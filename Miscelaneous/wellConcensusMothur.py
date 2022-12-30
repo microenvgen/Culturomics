@@ -40,12 +40,15 @@ def main():
 	parser.add_argument('fastq', type = str, help = 'fastq file (uncompressed)')
 	# parser.add_argument('output', type = str, help = '.....')
 
-
 	parser.add_argument('-m', dest = 'mothur_path', type = str, help = 'Mothur containing folder. If not specify it should expected to be in PATH')
 	parser.add_argument('-s', dest = 'seed_path', type = str, help = 'seed containing folder. If not specify it should expected to be in the current directory')
 
 	parser.add_argument('-l', dest = 'length', type = int, default = 900, help = 'Minumim read length to include in downstream analysis. Default: 900')
+	parser.add_argument('-c', dest = 'cutoff', type = int, default = 50, help = 'Cutoff (%) for defining consensus base: Default: 50')
 
+
+
+	parser.add_argument('-t', dest = 'threads', type = str, default = 2, help = 'Number of threads. Default: 2')
 
 	args = parser.parse_args()
 	##########################################################################################
@@ -78,30 +81,33 @@ def main():
 	if args.seed_path: seed_path = args.seed_path + "/"
 
 	#--Aligning reads against seed database
-	cmd = f'{mothur_path}mothur "#align.seqs(candidate={fasta_file_name}, template={seed_path}silva.seed_v138_1.align)"'
+	cmd = f'{mothur_path}mothur "#align.seqs(candidate={fasta_file_name}, template={seed_path}silva.seed_v138_1.align, processors={args.threads})"'
 	print(cmd)
+	runCMD(cmd)
+
+	#--Consensus (filtering all dots otherwise consensus calculation takes to long....)
+	cmd = f'{mothur_path}mothur "#filter.seqs(fasta={prefix}.align, vertical=T, trump=.)"'
+	print(cmd)
+	runCMD(cmd)
+
+	cmd = f'{mothur_path}mothur "#consensus.seqs(fasta={prefix}.filter.fasta, cutoff={args.cutoff})"'
+	print(cmd)
+	runCMD(cmd)
+
+	#--Removing gaps from consensus
+	# mothur "#degap.seqs(fasta=${input}.good.filter.cons.fasta)"
+
+
+
+
+#--Functions
+def runCMD(cmd):
 	out, err = subprocess.Popen(cmd, shell = True, stdout=subprocess.PIPE).communicate()
 	print('#################')
 	print(out.decode())
 	print('#################')
 	print(err)
 
-
-
-
-
-
-# mothur "#align.seqs(candidate=${input}.good.fasta, template=silva.seed_v138_1.align)"
-
-# #--Consensus (filter all dots otherwise consensus calculation takes to long....)
-# mothur "#filter.seqs(fasta=${input}.good.align, vertical=T, trump=.)"
-# mothur "#consensus.seqs(fasta=${input}.good.filter.fasta, cutoff=${CONSENSUSCUTOFF})"
-
-# #--Removing gaps from consensus
-# mothur "#degap.seqs(fasta=${input}.good.filter.cons.fasta)"
-
-
-#--Functions
 def fastqRead(fastq):
 
 	with open(fastq, 'r') as infile:
