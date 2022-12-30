@@ -70,7 +70,7 @@ def main():
 
 	#--Empty fasta check (due to empty fastq or by length filtering)
 	if fasta_reads == 0: 
-		sys.exit('No reads were found in fasta file.')
+		sys.exit('#'*90 + '\n' + 'No reads were found in fasta file!!!!!' + '#'*90 + '\n')
 
 	####--Running Mothur--####
 	#--Defining paths
@@ -81,21 +81,53 @@ def main():
 	if args.seed_path: seed_path = args.seed_path + "/"
 
 	#--Aligning reads against seed database
-	cmd = f'{mothur_path}mothur "#align.seqs(candidate={fasta_file_name}, template={seed_path}silva.seed_v138_1.align, processors={args.threads})"'
+	cmd = f'{mothur_path}mothur "#align.seqs(candidate={prefix}.fasta, template={seed_path}silva.seed_v138_1.align, processors={args.threads})"'
 	print(cmd)
-	runCMD(cmd)
+	runCMD(cmd) 
+	# outputs: 
+		# prefix.align
+		# prefix.align_report
+		# prefix.flip.accnos (sequence reversed and complemented)
 
-	#--Consensus (filtering all dots otherwise consensus calculation takes to long....)
-	cmd = f'{mothur_path}mothur "#filter.seqs(fasta={prefix}.align, vertical=T, trump=.)"'
-	print(cmd)
-	runCMD(cmd)
+	#--Filtering all dots otherwise consensus calculation takes to long
+	# cmd = f'{mothur_path}mothur "#filter.seqs(fasta={prefix}.align, vertical=T, trump=.)"'
+	# print(cmd)
+	# runCMD(cmd) 
+	# outputs: 
+		# prefix.filter (remove columns map)
+		# prefix.filter.fasta
 
-	cmd = f'{mothur_path}mothur "#consensus.seqs(fasta={prefix}.filter.fasta, cutoff={args.cutoff})"'
+	#--Consensus creation
+	cmd = f'{mothur_path}mothur "#consensus.seqs(fasta={prefix}.align, cutoff={args.cutoff})"'
 	print(cmd)
 	runCMD(cmd)
+	# outputs:
+		# prefix.filter.cons.fasta
+		# prefix.filter.cons.summary
 
 	#--Removing gaps from consensus
-	# mothur "#degap.seqs(fasta=${input}.good.filter.cons.fasta)"
+	# cmd = f'{mothur_path}mothur "#degap.seqs(fasta={prefix}.filter.cons.fasta)"'
+	# print(cmd)
+	# runCMD(cmd)
+	# outputs:
+		# prefix.filter.cons.ng.fasta
+
+	#--Re-aligning reads against consensus for SNVs and Indels detection
+	# cmd = f'{mothur_path}mothur "#align.seqs(candidate={prefix}.fasta, template={prefix}.filter.cons.ng.fasta, processors={args.threads})"'
+	# print(cmd)
+	# runCMD(cmd)
+	# outputs: 
+		# prefix.align (overwritten)
+		# prefix.align_report (overwritten)
+		# prefix.flip.accnos (sequence reversed and complemented) (overwritten)
+	# cmd = f'{mothur_path}mothur "#consensus.seqs(fasta={prefix}.align, cutoff={args.cutoff})"'
+	# print(cmd)
+	# runCMD(cmd)
+	# outputs:
+		# prefix.cons.fasta
+		# prefix.cons.summary
+
+	#--SNVs and Indels analysis
 
 
 
@@ -123,6 +155,30 @@ def fastqRead(fastq):
 			record = [name, seq, coment, qual]
 
 			yield record
+
+def readTSV(file, header=False, comments=None):
+
+	with open(file, 'r') as infile:
+
+		if header:
+
+			h = infile.readline()
+
+		for line in infile:
+
+			line = line.rstrip('\n')
+
+			if not line: #--Empty spaces
+				continue
+
+			if comments:
+
+				if line.startswith(comments):
+					continue
+
+			col = line.split('\t')
+
+			yield col
 
 ##########################################################################################
 if __name__ == "__main__":
