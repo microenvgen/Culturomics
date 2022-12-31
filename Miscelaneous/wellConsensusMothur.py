@@ -7,7 +7,7 @@
 Description:
 
 This scripts uses Mothur for building a consensus sequence using provided fastq file.
-It also analyse variants (SNVs) and Indels present in read alignment produce by Mothur.
+It also analyse variants (SNVs) and Indels present in read alignment produced by Mothur.
 
 Requirements:
 
