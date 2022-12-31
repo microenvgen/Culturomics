@@ -131,26 +131,25 @@ def main():
 		else: 
 			consensus.append(col[-1])
 			try:
-				base_index = bases.index(col[-1].upper())
+				base_index = bases.index(col[-1].upper()) #--Lower case bases appears when a gap is equally represented than assigned base (txt.islower())
 				if float(col[base_index + 1]) <= args.variants_threshold:
-					muts = [float(x) for x in col[1:6]]
+					muts_freq = [float(x) for x in col[1:6]]
+					muts_indexes = [i for i, x in enumerate(muts_freq) if i != base_index and x > 0]
+					if len(muts_indexes) == 1:
+						if bases[muts_indexes[0]] == '-':
+							indels += 1
+						else:
+							snvs += 1
+					else: #--More than 1 variant (Here, if 2 different bases or a base and gaps other than consensus have the same frequency, only 1 is randonmly reported and registered ad recorded as snv or indel, althought both could be simultaneusly possible)
+						variants = [[muts_freq[i], bases[i]] for i in muts_indexes]
+						next_most_frequent = sorted(variants, reverse=True)[0]
+						if next_most_frequent[1] == '-':
+							indels += 1
+						else:
+							snvs += 1
 
-
-
-					#--if more than one element have the same percentage, python returns the first in the original array
-					next_most_abundant = bases[muts.index(sorted(muts, reverse=True)[1])]
-					print(col[-1], next_most_abundant)
-					print(col)
-					if next_most_abundant == '-':
-						indels += 1
-					else:
-						snvs += 1
-
-			except ValueError: #--Degenerated bases
+			except ValueError: #--Degenerated bases (2 or more bases are equally represented in position)
 				snvs += 1
-
-
-
 
 	#--Writing output
 	with open(f'{prefix}.consensus.fasta', 'w') as output:
@@ -160,7 +159,6 @@ def main():
 	msg = f'Variants analysis\nSNVs:{snvs}\nIndels: {indels}'
 	log_file.write('#'*90 + '\n' + msg + '\n' + '#'*90 + '\n')
 	log_file.close()
-
 
 	#--Removing intermediate files
 	if not args.keep_temporal:
