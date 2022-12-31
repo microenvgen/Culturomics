@@ -80,14 +80,29 @@ def main():
 	msg = f'InputFile:{prefix}\nFastq_reads: {fastq_reads}\nFasta_reads: {fasta_reads}'
 	log_file.write('#'*90 + '\n' + msg + '\n' + '#'*90 + '\n')
 
-	####--Running Mothur--####
-	#--Defining paths
+	#--Defining paths and check requirements
 	mothur_path = ''
-	if args.mothur_path: mothur_path = args.mothur_path + "/"
+	if args.mothur_path: 
+		mothur_path = args.mothur_path + "/"
+		if not checkfile(f'{mothur_path}mothur'):
+			msg = '#'*90 + '\n' + 'Mothur were not found in specify path' + '#'*90 + '\n'
+			log_file.write(msg)
+			sys.exit(msg)
+	else:
+		if not checkPATH("mothur"):
+			msg = '#'*90 + '\n' + 'Mothur were not found in PATH' + '#'*90 + '\n'
+			log_file.write(msg)
+			sys.exit(msg)
 
 	seed_path = ''
-	if args.seed_path: seed_path = args.seed_path + "/"
+	if args.seed_path: 
+		seed_path = args.seed_path + "/"
+	if not checkfile(f'{seed_path}silva.seed_v138_1.align'):
+		msg = '#'*90 + '\n' + 'Seed database were not found' + '#'*90 + '\n'
+		log_file.write(msg)
+		sys.exit(msg)
 
+	####--Running Mothur--####
 	#--Aligning reads against seed database
 	cmd = f'{mothur_path}mothur "#align.seqs(candidate={prefix}.fasta, template={seed_path}silva.seed_v138_1.align, processors={args.threads})"'
 	log_file.write('#'*90 + '\n' + cmd + '\n' + '#'*90 + '\n')
@@ -216,6 +231,17 @@ def readTSV(file, header=False, comments=None):
 			col = line.split('\t')
 
 			yield col
+
+
+def checkfile(file):
+
+	return os.path.exists(file)
+
+def checkPATH(program):
+
+	from shutil import which
+
+	return which(program) is not None
 
 ##########################################################################################
 if __name__ == "__main__":
