@@ -7,19 +7,19 @@
 Description:
 
 This scripts uses Mothur for building a consensus sequence using provided fastq file.
-It also analysis variants (SNVs) and Indels present
+It also analyse variants (SNVs) and Indels present in read alignment produce by Mothur.
 
 Requirements:
 
-- Mothur (v.1.48.0, https://github.com/mothur/mothur/releases/download/)
+-Mothur (v.1.48.0, https://github.com/mothur/mothur/releases/download/)
 	Must be in PATH or use -m option to specify the path to containing folder
-- Seed database (https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.seed_v138_1.tgz)
+-Seed database (https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.seed_v138_1.tgz)
 	It is expected to be in the current directory, otherwise use -s option to specify the 
 	path to containing folder
 
 Outputs:
-- prefix.consensus.fasta
-- prefix.log.txt
+-prefix.consensus.fasta
+-prefix.log.txt
 ------------------------------------------------------------------------------------------
 """
 ##########################################################################################
@@ -41,15 +41,16 @@ def main():
 	parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 	parser.add_argument('fastq', type = str, help = 'fastq file (uncompressed)')
 
-	parser.add_argument('-m', dest = 'mothur_path', type = str, help = 'Mothur containing folder. If not specify it should expected to be in PATH')
-	parser.add_argument('-s', dest = 'seed_path', type = str, help = 'seed containing folder. If not specify it should expected to be in the current directory')
+	parser.add_argument('-m', dest = 'mothur_path', type = str, help = 'Mothur containing folder. If not specify it is expected to be in PATH')
+	parser.add_argument('-s', dest = 'seed_path', type = str, help = 'seed containing folder. If not specify it is expected to be in the current directory')
 
 	parser.add_argument('-l', dest = 'length', type = int, default = 900, help = 'Minumim read length to include in downstream analysis. Default: 900')
-	parser.add_argument('-c', dest = 'cutoff', type = int, default = 50, help = 'Cutoff (%) for defining consensus base: Default: 50')
-	parser.add_argument('-v', dest = 'variants_threshold', type = float, default = 0.8, help = 'Threshold to consider variants (SNVs and Indels). Default: 0.8')
+	parser.add_argument('-c', dest = 'cutoff', type = int, default = 50, help = 'Cutoff for defining consensus base: Default: 50')
+	parser.add_argument('-n', dest = 'variants', type = float, default = 0.8, help = 'Threshold to consider variants (SNVs and Indels). Default: 0.8')
 
 	parser.add_argument('-t', dest = 'threads', type = str, default = 2, help = 'Number of threads. Default: 2')
-	parser.add_argument('-k', dest = 'keep_temporal', action='store_true', default = False, help = "Use this option to keep temporal files. Default: False")
+	parser.add_argument('-k', dest = 'keep_temporal', action='store_true', default = False, help = 'Use this option to keep temporal files. Default: False')
+	parser.add_argument('-v', '--version', action='version', version=__file__ + ' Version: ' + __version__)
 
 	args = parser.parse_args()
 	##########################################################################################
@@ -126,13 +127,13 @@ def main():
 			if float(col[-3]) == 1: #--Only gaps in alignment
 				continue
 			else: #--Most abundant element in this position is a gap (not included in consensus)
-				if float(col[-3]) <= args.variants_threshold:
+				if float(col[-3]) <= args.variants:
 					indels += 1
 		else: 
 			consensus.append(col[-1])
 			try:
 				base_index = bases.index(col[-1].upper()) #--Lower case bases appears when a gap is equally represented than assigned base (txt.islower())
-				if float(col[base_index + 1]) <= args.variants_threshold:
+				if float(col[base_index + 1]) <= args.variants:
 					muts_freq = [float(x) for x in col[1:6]]
 					muts_indexes = [i for i, x in enumerate(muts_freq) if i != base_index and x > 0]
 					if len(muts_indexes) == 1:
