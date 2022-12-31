@@ -73,7 +73,7 @@ def main():
 
 	#--Empty fasta check (due to empty fastq or by length filtering)
 	if fasta_reads == 0: 
-		msg = '#'*90 + '\n' + 'No reads were found in fasta file!!!!!' + '#'*90 + '\n'
+		msg = '#'*90 + '\n' + 'No reads were found in fasta file!!!!!' + '\n' + '#'*90 + '\n'
 		log_file.write(msg)
 		sys.exit(msg)
 
@@ -232,12 +232,13 @@ def readTSV(file, header=False, comments=None):
 
 			yield col
 
-
 def checkfile(file):
 
 	return os.path.exists(file)
 
 def checkPATH(program):
+
+	""" Return true if program is on PATH """
 
 	from shutil import which
 
