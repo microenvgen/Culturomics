@@ -50,6 +50,7 @@ def main():
 
 	parser.add_argument('-t', dest = 'threads', type = str, default = 2, help = 'Number of threads. Default: 2')
 	parser.add_argument('-k', dest = 'keep_temporal', action='store_true', default = False, help = 'Use this option to keep temporal files. Default: False')
+	parser.add_argument('-x', dest = 'debug', action='store_true', default = False, help = 'Debug. Default: False')
 	parser.add_argument('-v', '--version', action='version', version=__file__ + ' Version: ' + __version__)
 
 	args = parser.parse_args()
@@ -101,7 +102,7 @@ def main():
 	if args.seed_path: 
 		seed_path = args.seed_path + "/"
 	if not checkfile(f'{seed_path}silva.seed_v138_1.align'):
-		msg = log_msg('ERROR: q1 YSeed database were not found')
+		msg = log_msg('ERROR: Seed database were not found')
 		log_file.write(msg)
 		log_file.close()
 		sys.exit(msg)
@@ -111,7 +112,7 @@ def main():
 	cmd = f'{mothur_path}mothur "#align.seqs(candidate={prefix}.fasta, template={seed_path}silva.seed_v138_1.align, processors={args.threads})"'
 	log_file.write(log_msg(cmd))
 	run_log = runCMD(cmd)
-	log_file.write(log_msg(run_log))
+	if args.debug: log_file.write(log_msg(run_log))
 	# outputs: 
 		# prefix.align
 		# prefix.align_report
@@ -121,7 +122,7 @@ def main():
 	cmd = f'{mothur_path}mothur "#consensus.seqs(fasta={prefix}.align, cutoff={args.cutoff})"'
 	log_file.write(log_msg(cmd))
 	run_log = runCMD(cmd)
-	log_file.write(log_msg(run_log))
+	if args.debug: log_file.write(log_msg(run_log))
 	# outputs:
 		# prefix.cons.fasta
 		# prefix.cons.summary
