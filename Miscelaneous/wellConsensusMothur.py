@@ -20,6 +20,13 @@ Requirements:
 Outputs:
 -prefix.consensus.fasta
 -prefix.log.txt
+
+
+Future improvement ideas:
+-Required a minimum number of sequences to build consensus (>= 3 reads?)
+-Write Mothur logs to logfile if a warning/error message appears
+-Change logfile for stdout printing? Do we need the logfile?
+
 ------------------------------------------------------------------------------------------
 """
 ##########################################################################################
@@ -76,6 +83,7 @@ def main():
 	if fasta_reads == 0: 
 		msg = log_msg(f'InputFile:{prefix}.fastq\nERROR: No reads were found in fasta file!!!')
 		log_file.write(msg)
+		log_file.close()
 		sys.exit(msg)
 
 	#--Writing reads counts to log
