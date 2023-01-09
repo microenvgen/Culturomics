@@ -23,6 +23,7 @@ Outputs:
 
 
 Future improvement ideas:
+-Add number of reads in consensus name
 -Required a minimum number of sequences to build consensus (>= 3 reads?)
 -Write Mothur logs to logfile if a warning/error message appears
 -Change logfile for stdout printing? Do we need the logfile?
@@ -169,7 +170,7 @@ def main():
 							indels += 1
 						else:
 							snvs += 1
-					else: #--More than 1 variant (Here, if 2 different bases or a base and gaps other than consensus have the same frequency, only 1 is randonmly reported and registered ad recorded as snv or indel, althought both could be simultaneusly possible)
+					else: #--More than 1 variant (Here, if 2 different bases or a base and gaps other than consensus have the same frequency, only 1 is randonmly reported and registered as snv or indel, althought both could be simultaneusly possible)
 						variants = [[muts_freq[i], bases[i]] for i in muts_indexes]
 						next_most_frequent = sorted(variants, reverse=True)[0]
 						if next_most_frequent[1] == '-':
