@@ -6,20 +6,37 @@
 ------------------------------------------------------------------------------------------
 Description:
 
+This script takes fasta
 
 Requirements:
 
--vsearch (v.1.48.0, https://github.com/mothur/mothur/releases/download/)
-	Must be in PATH or use -m option to specify the path to containing folder
+	vsearch (v2.22.1, https://github.com/torognes/vsearch)
+		Must be in PATH or use -b option to specify the path to containing folder
 
 
 Outputs:
--prefix.consensus.fasta
--prefix.log.txt
+	output_prefix.uc (see vsearch manual)
+	output_prefix_clusters.txt (only if -w option is applied)
 
+Example: 
+	vsearchClustering.py *.consensus.fasta -o plate_E7 -w 
 
 Future improvement ideas:
 
+
+
+
+### VSEARCH installation (https://github.com/torognes/vsearch)
+wget https://github.com/torognes/vsearch/archive/v2.22.1.tar.gz
+tar xzf v2.22.1.tar.gz
+cd vsearch-2.22.1
+./autogen.sh
+./configure CFLAGS="-O3" CXXFLAGS="-O3"
+make
+make install  # as root or sudo make install
+
+or download precompiled version from https://github.com/torognes/vsearch/releases
+or use the vsearch integrated un Mothur, just put it on the PATH
 
 ------------------------------------------------------------------------------------------
 """
@@ -40,167 +57,143 @@ def main():
 	##########################################################################################
 	#--Argument
 	parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-	parser.add_argument('files', nargs="*", type = str, help = '.....')
+	parser.add_argument('input_files', nargs="*", type = str, help = 'list or regex for input fasta files to include')
+	parser.add_argument('-o', dest='output', type = str, required=True, help = 'Output prefix name')
 
-	# parser.add_argument('fastq', type = str, help = 'fastq file (uncompressed)')
+	parser.add_argument('-i', dest = 'identity', type = int, default = 0.99, help = 'Minimum identity to build clusters: Default: 0.99')
+	parser.add_argument('-b', dest = 'binpath', type = str, help = 'VSEARCH containing folder. If not specify it is expected to be in PATH')
+	parser.add_argument('-w', dest = 'from_wellConsensusMothur', action='store_true', default = False, help = 'Input sequences were generated using wellConsensusMothur.py and the vsearch output will be parsed considering the number of reads and SNV/Indel detected during consensus building to choose a representative sequence. Default: False')
 
-	# parser.add_argument('-m', dest = 'mothur_path', type = str, help = 'Mothur containing folder. If not specify it is expected to be in PATH')
-	# parser.add_argument('-s', dest = 'seed_path', type = str, help = 'seed containing folder. If not specify it is expected to be in the current directory')
-
-	# parser.add_argument('-l', dest = 'length', type = int, default = 900, help = 'Minumim read length to include in downstream analysis. Default: 900')
-	# parser.add_argument('-c', dest = 'cutoff', type = int, default = 50, help = 'Cutoff for defining consensus base: Default: 50')
-	# parser.add_argument('-n', dest = 'variants', type = float, default = 0.8, help = 'Threshold to consider variants (SNVs and Indels). Default: 0.8')
-
-	# parser.add_argument('-t', dest = 'threads', type = str, default = 2, help = 'Number of threads. Default: 2')
-	# parser.add_argument('-k', dest = 'keep_temporal', action='store_true', default = False, help = 'Use this option to keep temporal files. Default: False')
+	parser.add_argument('-k', dest = 'keep_temporal', action='store_true', default = False, help = 'Use this option to keep temporal files. Default: False')
 	parser.add_argument('-v', '--version', action='version', version=__file__ + ' Version: ' + __version__)
 
 	args = parser.parse_args()
 	##########################################################################################
+	#--Check the number of input files (>=2)
+	if len(args.input_files) < 2:
+		sys.exit('#'*90 + '\nERROR: at least 2 files must be given\n' + '#'*90)
 
-	#--Input file prefix
-	prefix = '.'.join(args.fastq.split('.')[:-1])
-	print('#'*90)
-	print(f'InputFile:{prefix}.fastq')
-	# log_file = open(f'{prefix}.log.txt', 'w')
-
-	#--Converting fastq to fasta (length filtering and counting)
-	fastq_reads = 0
-	fasta_reads = 0
-	fasta_file_name = f'{prefix}.fasta'
-	with open(fasta_file_name, 'w') as fasta_file:
-		for record in fastqRead(args.fastq):
-			if record:
-				fastq_reads += 1
-				if len(record[1]) >= args.length:
-					fasta_reads += 1
-					fasta_file.write(f'>{record[0][1:]}\n{record[1]}\n')
-
-	#--Empty fasta check (due to empty fastq or by length filtering)
-	if fasta_reads == 0: 
-		sys.exit('ERROR: No reads were found in fasta file!!!\n' + '#'*90)
-
-	#--Writing reads counts 
-	print(f'Fastq_reads: {fastq_reads}')
-	print(f'Fasta_reads: {fasta_reads}')
-
-
-	#--Defining paths and check requirements
-	mothur_path = ''
-	if args.mothur_path:
-		mothur_path = args.mothur_path + "/"
-		if not checkfile(f'{mothur_path}mothur'):
-			sys.exit('ERROR: Mothur were not found in specify path\n' + '#'*90)
+	#--Defining path and check requirements
+	binpath = ''
+	if args.binpath:
+		binpath = args.binpath + "/"
+		if not checkfile(f'{binpath}vsearch'):
+			sys.exit('#'*90 + '\nERROR: vsearch were not found in specify path\n' + '#'*90)
 	else:
-		if not checkPATH("mothur"):
-			sys.exit('ERROR: Mothur were not found in PATH\n' + '#'*90)
+		if not checkPATH("vsearch"):
+			sys.exit('#'*90 + '\nERROR: vsearch were not found in PATH\n' + '#'*90)
 
-	seed_path = ''
-	if args.seed_path: 
-		seed_path = args.seed_path + "/"
-	if not checkfile(f'{seed_path}silva.seed_v138_1.align'):
-		sys.exit('ERROR: Seed database were not found\n' + '#'*90)
+	#--Joining all sequences in a single file
+	with open(f'{args.output}.fasta', 'w') as all_seq_file:
+		for file in args.input_files:
+			for name, seq in fastaRead(file):
+				all_seq_file.write(f'>{name}\n{seq}\n')
 
-	####--Running Mothur--####
-	#--Aligning reads against seed database
-	cmd = f'{mothur_path}mothur "#align.seqs(candidate={prefix}.fasta, template={seed_path}silva.seed_v138_1.align, processors={args.threads})"'
+	#--Running vsearh
+	### Vsearch uses all threads and ran memory avaible in the machine and I do no know how to change this
+	cmd=f'{binpath}vsearch --cluster_fast {args.output}.fasta -id {args.identity} -uc {args.output}.uc'
+	print(cmd)
 	run_log = runCMD(cmd)
+	print(run_log)
 	# outputs:
-		# prefix.align
-		# prefix.align_report
-		# prefix.flip.accnos (sequence reversed and complemented)
+		# output_prefix.uc
 
-	#--Consensus creation
-	cmd = f'{mothur_path}mothur "#consensus.seqs(fasta={prefix}.align, cutoff={args.cutoff})"'
-	run_log = runCMD(cmd)
-	# outputs:
-		# prefix.cons.fasta
-		# prefix.cons.summary
 
-	#--SNVs and Indels analysis (prefix.cons.summary)
-	# PositioninAlignment	A	T	G	C	Gap	NumberofSeqs	ConsensusBase
-	# 1	0.000000	0.000000	0.000000	0.000000	1.000000	12	.
-	# 3140	0.000000	0.083333	0.000000	0.916667	0.000000	12	C
-	# 3141	0.000000	0.000000	0.000000	0.000000	1.000000	12	-
-	# 3142	0.000000	0.000000	1.000000	0.000000	0.000000	12	G
-	# 1164	0.000000	0.000000	0.250000	0.000000	0.750000	12	-
+	#--Parsing vsearch output (-w)
+	if args.from_wellConsensusMothur:
 
-	consensus = []
-	snvs = 0
-	indels = 0
-	bases = ['A', 'T', 'G', 'C', '-']
+		fasta = fasta2dict(f'{args.output}.fasta')
 
-	for col in readTSV(f'{prefix}.cons.summary', header=True):
-		if col[-1] == '.': #--No bases in alignment
-			continue
-		elif col[-1] == '-':
-			if float(col[-3]) == 1: #--Only gaps in alignment
-				continue
-			else: #--Most abundant element in this position is a gap (not included in consensus)
-				if float(col[-3]) <= args.variants:
-					indels += 1
-		else: 
-			consensus.append(col[-1])
-			try:
-				base_index = bases.index(col[-1].upper()) #--Lower case bases appears when a gap is equally represented than assigned base (txt.islower())
-				if float(col[base_index + 1]) <= args.variants:
-					muts_freq = [float(x) for x in col[1:6]]
-					muts_indexes = [i for i, x in enumerate(muts_freq) if i != base_index and x > 0]
-					if len(muts_indexes) == 1:
-						if bases[muts_indexes[0]] == '-':
-							indels += 1
-						else:
-							snvs += 1
-					else: #--More than 1 variant (Here, if 2 different bases or a base and gaps other than consensus have the same frequency, only 1 is randonmly reported and registered as snv or indel, althought both could be simultaneusly possible)
-						variants = [[muts_freq[i], bases[i]] for i in muts_indexes]
-						next_most_frequent = sorted(variants, reverse=True)[0]
-						if next_most_frequent[1] == '-':
-							indels += 1
-						else:
-							snvs += 1
+		from collections import defaultdict
+		clusters = defaultdict(list)
 
-			except ValueError: #--Degenerated bases (2 or more bases are equally represented in position)
-				snvs += 1
+		for col in readTSV(f'{args.output}.uc'):
+			if col[0] == 'S' or col[0] == 'H': #--Cluster reference sequences accordingly to vsearch
+				cluster = col[1] #--Cluster number
+				reads = float(col[8].split('_')[-3].split('=')[1])
+				snvs = float(col[8].split('_')[-2].split('=')[1])
+				indels = float(col[8].split('_')[-1].split('=')[1])
+				quality = reads / (snvs+indels+1) #--the higher the value, the smaller the number of variants per read
 
-	#--Writing output
-	with open(f'{prefix}.consensus.fasta', 'w') as output:
-		consensus_name = f'{prefix}_READS={fasta_reads}_SNVs={snvs}_Indels={indels}'
-		output.write('>{}\n{}\n'.format(consensus_name, ''.join(consensus)))
+				clusters[cluster].append([col[8], quality])
 
-	print(f'SNVs:{snvs}\nIndels: {indels}')
-	print('#'*90)
 
-	#--Removing intermediate files
-	# if not args.keep_temporal:
-	# 	os.remove(f'{prefix}.fasta')
-	# 	os.remove(f'{prefix}.align')
-	# 	os.remove(f'{prefix}.align_report')
-	# 	os.remove(f'{prefix}.cons.fasta')
-	# 	os.remove(f'{prefix}.cons.summary')
+		with open(f'{args.output}_clusters.txt', 'w') as output:
+			with open(f'{args.output}_representative.fasta', 'w') as outputfasta:
 
-	# 	subprocess.call(f'rm -fr {prefix}.flip.accnos', shell=True)
-	# 	subprocess.call('rm -fr *.logfile', shell=True)
+				output.write('Representative\tN_Members\tMembers\n')
+				for cluster in clusters:
+					output.write(str(len(clusters[cluster])) + '\t')
+					sorted_cluster = sorted(clusters[cluster], key = lambda x: x[1], reverse=True)
+					output.write(sorted_cluster[0][0] + '\t')
+					outputfasta.write('>{}\n{}\n'.format(sorted_cluster[0][0], fasta[sorted_cluster[0][0]]))
+					members = [seqname[0] for seqname in sorted_cluster[1:]]
+					output.write(','.join(members) + '\n')
 
 #--Functions
+def fastaRead(fasta, split_names=False):
+
+	with open(fasta, 'r') as infile:
+		
+		seq = ''
+		for line in infile:
+
+			line = line.strip()
+
+			if line.startswith(">"):
+				
+				if seq:
+
+					yield name, seq
+					seq = ''
+
+				name = line[1:]
+				if split_names: name = line.split()[0][1:]
+
+			else:
+				seq = seq + line
+
+	#--Last sequence
+	yield name, seq
+
 def runCMD(cmd):
 	out, err = subprocess.Popen(cmd, shell = True, stdout=subprocess.PIPE).communicate()
 	return out.decode()
 
-def fastqRead(fastq):
+def fasta2dict(file, split_names=False):
+	
+	""" Función que recorre un fichero fasta y almacena la información en un diccionario """
+	
+	#--Variables
+	fasta = {}
+	seq = "" 
 
-	with open(fastq, 'r') as infile:
+	#--Recorremos el fichero que contiene las secuencias en fasta 
+	infile = open (file, 'r')
+	
+	for line in infile:
+		line = line.rstrip('\n')
 
-		while True:
-			name = infile.readline().rstrip('\n')
-			seq = infile.readline().rstrip('\n')
-			coment = infile.readline().rstrip('\n')
-			qual = infile.readline().rstrip('\n')
+		if line[0] == '>':
+		
+			if seq:
+			
+				fasta[name] = seq
+				seq = ""
+				
+			name = line[1:]
+			if split_names: name = line.split()[0][1:]
+			
+		else:
+		
+			seq = seq + line
 
-			if not name: break
-
-			record = [name, seq, coment, qual]
-
-			yield record
+	#--La última secuencia
+	fasta[name] = seq
+	infile.close()
+	
+	#--Devolvemos el diccionario
+	return fasta
 
 def readTSV(file, header=False, comments=None):
 

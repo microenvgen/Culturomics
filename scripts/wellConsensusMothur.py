@@ -8,6 +8,9 @@ Description:
 
 This scripts uses Mothur for building a consensus sequence using provided fastq file.
 It also analyse variants (SNVs) and Indels present in read alignment produced by Mothur.
+Output consensus sequence name will be form by the name of the input file plus the
+number of reads use to build the consensus and the number of SNV and INDES (
+E7_Well_C10_Locus_16S_long_READS=5_SNVs=9_Indels=18)
 
 Requirements:
 
@@ -25,6 +28,8 @@ Outputs:
 Future improvement ideas:
 -Required a minimum number of sequences to build consensus (>= 3 reads?)
 -Write Mothur logs to logfile if a warning/error message appears
+-Use GOLD bacteria database (https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.gold.bacteria.zip)
+-Autodownload seed/gold database?
 
 ------------------------------------------------------------------------------------------
 """
