@@ -35,8 +35,8 @@ cd vsearch-2.22.1
 make
 make install  # as root or sudo make install
 
-or download precompiled version from https://github.com/torognes/vsearch/releases
-or use the vsearch integrated un Mothur, just put it on the PATH
+or download a precompiled version from https://github.com/torognes/vsearch/releases
+or use the vsearch integrated in Mothur, just put it on the PATH
 
 ------------------------------------------------------------------------------------------
 """
