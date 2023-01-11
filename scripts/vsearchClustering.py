@@ -6,16 +6,12 @@
 ------------------------------------------------------------------------------------------
 Description:
 
-This scripts uses Mothur for building a consensus sequence using provided fastq file.
-It also analyse variants (SNVs) and Indels present in read alignment produced by Mothur.
 
 Requirements:
 
--Mothur (v.1.48.0, https://github.com/mothur/mothur/releases/download/)
+-vsearch (v.1.48.0, https://github.com/mothur/mothur/releases/download/)
 	Must be in PATH or use -m option to specify the path to containing folder
--Seed database (https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.seed_v138_1.tgz)
-	It is expected to be in the current directory, otherwise use -s option to specify the 
-	path to containing folder
+
 
 Outputs:
 -prefix.consensus.fasta
@@ -23,8 +19,7 @@ Outputs:
 
 
 Future improvement ideas:
--Required a minimum number of sequences to build consensus (>= 3 reads?)
--Write Mothur logs to logfile if a warning/error message appears
+
 
 ------------------------------------------------------------------------------------------
 """
@@ -45,17 +40,19 @@ def main():
 	##########################################################################################
 	#--Argument
 	parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-	parser.add_argument('fastq', type = str, help = 'fastq file (uncompressed)')
+	parser.add_argument('files', nargs="*", type = str, help = '.....')
 
-	parser.add_argument('-m', dest = 'mothur_path', type = str, help = 'Mothur containing folder. If not specify it is expected to be in PATH')
-	parser.add_argument('-s', dest = 'seed_path', type = str, help = 'seed containing folder. If not specify it is expected to be in the current directory')
+	# parser.add_argument('fastq', type = str, help = 'fastq file (uncompressed)')
 
-	parser.add_argument('-l', dest = 'length', type = int, default = 900, help = 'Minumim read length to include in downstream analysis. Default: 900')
-	parser.add_argument('-c', dest = 'cutoff', type = int, default = 50, help = 'Cutoff for defining consensus base: Default: 50')
-	parser.add_argument('-n', dest = 'variants', type = float, default = 0.8, help = 'Threshold to consider variants (SNVs and Indels). Default: 0.8')
+	# parser.add_argument('-m', dest = 'mothur_path', type = str, help = 'Mothur containing folder. If not specify it is expected to be in PATH')
+	# parser.add_argument('-s', dest = 'seed_path', type = str, help = 'seed containing folder. If not specify it is expected to be in the current directory')
 
-	parser.add_argument('-t', dest = 'threads', type = str, default = 2, help = 'Number of threads. Default: 2')
-	parser.add_argument('-k', dest = 'keep_temporal', action='store_true', default = False, help = 'Use this option to keep temporal files. Default: False')
+	# parser.add_argument('-l', dest = 'length', type = int, default = 900, help = 'Minumim read length to include in downstream analysis. Default: 900')
+	# parser.add_argument('-c', dest = 'cutoff', type = int, default = 50, help = 'Cutoff for defining consensus base: Default: 50')
+	# parser.add_argument('-n', dest = 'variants', type = float, default = 0.8, help = 'Threshold to consider variants (SNVs and Indels). Default: 0.8')
+
+	# parser.add_argument('-t', dest = 'threads', type = str, default = 2, help = 'Number of threads. Default: 2')
+	# parser.add_argument('-k', dest = 'keep_temporal', action='store_true', default = False, help = 'Use this option to keep temporal files. Default: False')
 	parser.add_argument('-v', '--version', action='version', version=__file__ + ' Version: ' + __version__)
 
 	args = parser.parse_args()
@@ -174,15 +171,15 @@ def main():
 	print('#'*90)
 
 	#--Removing intermediate files
-	if not args.keep_temporal:
-		os.remove(f'{prefix}.fasta')
-		os.remove(f'{prefix}.align')
-		os.remove(f'{prefix}.align_report')
-		os.remove(f'{prefix}.cons.fasta')
-		os.remove(f'{prefix}.cons.summary')
+	# if not args.keep_temporal:
+	# 	os.remove(f'{prefix}.fasta')
+	# 	os.remove(f'{prefix}.align')
+	# 	os.remove(f'{prefix}.align_report')
+	# 	os.remove(f'{prefix}.cons.fasta')
+	# 	os.remove(f'{prefix}.cons.summary')
 
-		subprocess.call(f'rm -fr {prefix}.flip.accnos', shell=True)
-		subprocess.call('rm -fr *.logfile', shell=True)
+	# 	subprocess.call(f'rm -fr {prefix}.flip.accnos', shell=True)
+	# 	subprocess.call('rm -fr *.logfile', shell=True)
 
 #--Functions
 def runCMD(cmd):
