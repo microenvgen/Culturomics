@@ -108,7 +108,7 @@ def main():
 		clusters = defaultdict(list)
 
 		for col in readTSV(f'{args.output}.uc'):
-			if col[0] == 'S' or col[0] == 'H': #--Cluster reference sequences accordingly to vsearch
+			if col[0] == 'S' or col[0] == 'H': #--Cluster reference sequences accordingly to vsearch cluster_fast (the longer)
 				cluster = col[1] #--Cluster number
 				reads = float(col[8].split('_')[-3].split('=')[1])
 				snvs = float(col[8].split('_')[-2].split('=')[1])
