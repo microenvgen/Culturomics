@@ -66,7 +66,9 @@ def main():
 
 	#--Input file prefix
 	prefix = '.'.join(args.fastq.split('.')[:-1])
-	log_file = open(f'{prefix}.log.txt', 'w')
+	print('#'*90)
+	print(f'InputFile:{prefix}.fastq')
+	# log_file = open(f'{prefix}.log.txt', 'w')
 
 	#--Converting fastq to fasta (length filtering and counting)
 	fastq_reads = 0
@@ -82,56 +84,41 @@ def main():
 
 	#--Empty fasta check (due to empty fastq or by length filtering)
 	if fasta_reads == 0: 
-		msg = log_msg(f'InputFile:{prefix}.fastq\nERROR: No reads were found in fasta file!!!')
-		log_file.write(msg)
-		log_file.close()
-		sys.exit(msg)
+		sys.exit('ERROR: No reads were found in fasta file!!!\n' + '#'*90)
 
-	#--Writing reads counts to log
-	msg = log_msg(f'InputFile:{prefix}\nFastq_reads: {fastq_reads}\nFasta_reads: {fasta_reads}')
-	log_file.write(msg)
+	#--Writing reads counts 
+	print(f'Fastq_reads: {fastq_reads}')
+	print(f'Fasta_reads: {fasta_reads}')
+
 
 	#--Defining paths and check requirements
 	mothur_path = ''
 	if args.mothur_path:
 		mothur_path = args.mothur_path + "/"
 		if not checkfile(f'{mothur_path}mothur'):
-			msg = log_msg('ERROR: Mothur were not found in specify path')
-			log_file.write(msg)
-			log_file.close()
-			sys.exit(msg)
+			sys.exit('ERROR: Mothur were not found in specify path\n' + '#'*90)
 	else:
 		if not checkPATH("mothur"):
-			msg = log_msg('ERROR: Mothur were not found in PATH')
-			log_file.write(msg)
-			log_file.close()
-			sys.exit(msg)
+			sys.exit('ERROR: Mothur were not found in PATH\n' + '#'*90)
 
 	seed_path = ''
 	if args.seed_path: 
 		seed_path = args.seed_path + "/"
 	if not checkfile(f'{seed_path}silva.seed_v138_1.align'):
-		msg = log_msg('ERROR: Seed database were not found')
-		log_file.write(msg)
-		log_file.close()
-		sys.exit(msg)
+		sys.exit('ERROR: Seed database were not found\n' + '#'*90)
 
 	####--Running Mothur--####
 	#--Aligning reads against seed database
 	cmd = f'{mothur_path}mothur "#align.seqs(candidate={prefix}.fasta, template={seed_path}silva.seed_v138_1.align, processors={args.threads})"'
-	log_file.write(log_msg(cmd))
 	run_log = runCMD(cmd)
-	if args.debug: log_file.write(log_msg(run_log))
-	# outputs: 
+	# outputs:
 		# prefix.align
 		# prefix.align_report
 		# prefix.flip.accnos (sequence reversed and complemented)
 
 	#--Consensus creation
 	cmd = f'{mothur_path}mothur "#consensus.seqs(fasta={prefix}.align, cutoff={args.cutoff})"'
-	log_file.write(log_msg(cmd))
 	run_log = runCMD(cmd)
-	if args.debug: log_file.write(log_msg(run_log))
 	# outputs:
 		# prefix.cons.fasta
 		# prefix.cons.summary
@@ -183,12 +170,11 @@ def main():
 
 	#--Writing output
 	with open(f'{prefix}.consensus.fasta', 'w') as output:
-		consensus_name = f'{prefix}_SNVs={snvs}_Indels={indels}'
+		consensus_name = f'{prefix}_READS={fasta_reads}_SNVs={snvs}_Indels={indels}'
 		output.write('>{}\n{}\n'.format(consensus_name, ''.join(consensus)))
 
-	msg = log_msg(f'Variants analysis\nSNVs:{snvs}\nIndels: {indels}')
-	log_file.write(msg)
-	log_file.close()
+	print(f'SNVs:{snvs}\nIndels: {indels}')
+	print('#'*90)
 
 	#--Removing intermediate files
 	if not args.keep_temporal:
@@ -257,12 +243,6 @@ def checkPATH(program):
 	from shutil import which
 
 	return which(program) is not None
-
-def log_msg(msg):
-
-	""" decorates log messages """
-
-	return "\n{}\n{}\n{}\n".format('#'*90, msg, '#'*90)
 
 ##########################################################################################
 if __name__ == "__main__":
