@@ -58,7 +58,6 @@ def main():
 
 	parser.add_argument('-t', dest = 'threads', type = str, default = 2, help = 'Number of threads. Default: 2')
 	parser.add_argument('-k', dest = 'keep_temporal', action='store_true', default = False, help = 'Use this option to keep temporal files. Default: False')
-	parser.add_argument('-x', dest = 'debug', action='store_true', default = False, help = 'Debug. Default: False')
 	parser.add_argument('-v', '--version', action='version', version=__file__ + ' Version: ' + __version__)
 
 	args = parser.parse_args()
