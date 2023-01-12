@@ -6,47 +6,36 @@
 ------------------------------------------------------------------------------------------
 Description:
 
-This script takes fasta
+This script takes several fasta files (at least 2) and cluster all sequences using vsearch
 
 Requirements:
 
-	vsearch (v2.22.1, https://github.com/torognes/vsearch)
-		Must be in PATH or use -b option to specify the path to containing folder
-
+-vsearch (v2.22.1, https://github.com/torognes/vsearch)
 
 Outputs:
 	output_prefix.uc (see vsearch manual)
-	output_prefix_clusters.txt (only if -w option is applied)
+	output_prefix_clusters.txt (only if -p option is used)
 
 Example: 
-	vsearchClustering.py *.consensus.fasta -o plate_E7 -w 
+	vsearchClustering.py *.consensus.fasta -o plate_E7 -p
 
-Future improvement ideas:
-
-
-
-
-### VSEARCH installation (https://github.com/torognes/vsearch)
-wget https://github.com/torognes/vsearch/archive/v2.22.1.tar.gz
-tar xzf v2.22.1.tar.gz
-cd vsearch-2.22.1
-./autogen.sh
-./configure CFLAGS="-O3" CXXFLAGS="-O3"
-make
-make install  # as root or sudo make install
-
-or download a precompiled version from https://github.com/torognes/vsearch/releases
-or use the vsearch integrated in Mothur, just put it on the PATH
-
+# vsearch --cluster_fast output file
+# S	0	1438	*	*	*	*	*	all.fastq_B10_Well_B2_locus_16S_long_READS=362_SNVS=14	*
+# H	0	1438	100.0	+	0	0	=	all.fastq_B10_Well_B4_locus_16S_long_READS=384_SNVS=7	all.fastq_B10_Well_B2_locus_16S_long_READS=362_SNVS=14
+# H	0	1438	100.0	+	0	0	=	all.fastq_B10_Well_B5_locus_16S_long_READS=415_SNVS=11	all.fastq_B10_Well_B2_locus_16S_long_READS=362_SNVS=14
+# H	0	1438	100.0	+	0	0	=	all.fastq_B10_Well_B6_locus_16S_long_READS=226_SNVS=16	all.fastq_B10_Well_B2_locus_16S_long_READS=362_SNVS=14
+# H	0	1438	100.0	+	0	0	=	all.fastq_B10_Well_E7_locus_16S_long_READS=1076_SNVS=6	all.fastq_B10_Well_B2_locus_16S_long_READS=362_SNVS=14
+# S	1	1386	*	*	*	*	*	all.fastq_B10_Well_B3_locus_16S_long_READS=467_SNVS=16	*
+# C	0	5	*	*	*	*	*	all.fastq_B10_Well_B2_locus_16S_long_READS=362_SNVS=14	*
+# C	1	1	*	*	*	*	*	all.fastq_B10_Well_B3_locus_16S_long_READS=467_SNVS=16	*
 ------------------------------------------------------------------------------------------
 """
 ##########################################################################################
-
 #--Imports
 import sys
 import os
 import argparse
-import subprocess
+import common_functions as cf
 
 __author__ = "Alberto Rastrojo"
 __version_info__ = ('1','0','0')
@@ -61,175 +50,75 @@ def main():
 	parser.add_argument('-o', dest='output', type = str, required=True, help = 'Output prefix name')
 
 	parser.add_argument('-i', dest = 'identity', type = int, default = 0.99, help = 'Minimum identity to build clusters: Default: 0.99')
-	parser.add_argument('-b', dest = 'binpath', type = str, help = 'VSEARCH containing folder. If not specify it is expected to be in PATH')
-	parser.add_argument('-w', dest = 'from_wellConsensusMothur', action='store_true', default = False, help = 'Input sequences were generated using wellConsensusMothur.py and the vsearch output will be parsed considering the number of reads and SNV/Indel detected during consensus building to choose a representative sequence. Default: False')
+	parser.add_argument('-p', dest = 'from_fastq2consensus', action='store_true', default = False, help = 'Input fasta files were generated using fastq2consensus.py the vsearch output will be parsed considering the number of reads and SNV/Indel/Deg detected to choose a representative sequence. Default: False')
 
 	parser.add_argument('-k', dest = 'keep_temporal', action='store_true', default = False, help = 'Use this option to keep temporal files. Default: False')
 	parser.add_argument('-v', '--version', action='version', version=__file__ + ' Version: ' + __version__)
 
 	args = parser.parse_args()
 	##########################################################################################
+	#--Checkign requirements
+	for program in ['vsearch']:
+		if not cf.checkpath(program):
+			sys.exit(f'ERROR: {program} were not found!\n' + '#'*90)
+
 	#--Check the number of input files (>=2)
 	if len(args.input_files) < 2:
-		sys.exit('#'*90 + '\nERROR: at least 2 files must be given\n' + '#'*90)
-
-	#--Defining path and check requirements
-	binpath = ''
-	if args.binpath:
-		binpath = args.binpath + "/"
-		if not checkfile(f'{binpath}vsearch'):
-			sys.exit('#'*90 + '\nERROR: vsearch were not found in specify path\n' + '#'*90)
-	else:
-		if not checkPATH("vsearch"):
-			sys.exit('#'*90 + '\nERROR: vsearch were not found in PATH\n' + '#'*90)
+		sys.exit(f'{"#"*90}\nERROR: at least 2 files must be given\n{"#"*90}')
 
 	#--Joining all sequences in a single file
 	with open(f'{args.output}.fasta', 'w') as all_seq_file:
 		for file in args.input_files:
-			for name, seq in fastaRead(file):
+			for name, seq in cf.fastaRead(file):
 				all_seq_file.write(f'>{name}\n{seq}\n')
 
 	#--Running vsearh
 	### Vsearch uses all threads and ran memory avaible in the machine and I do no know how to change this
-	cmd=f'{binpath}vsearch --cluster_fast {args.output}.fasta -id {args.identity} -uc {args.output}.uc'
-	print(cmd)
-	run_log = runCMD(cmd)
-	print(run_log)
+	cf.runexternalcommand(f'vsearch --cluster_fast {args.output}.fasta -id {args.identity} -uc {args.output}.uc')
 	# outputs:
 		# output_prefix.uc
 
 
 	#--Parsing vsearch output (-w)
-	if args.from_wellConsensusMothur:
+	if args.from_fastq2consensus:
 
-		fasta = fasta2dict(f'{args.output}.fasta')
+		fasta = cf.fasta2dict(f'{args.output}.fasta')
 
 		from collections import defaultdict
 		clusters = defaultdict(list)
 
-		for col in readTSV(f'{args.output}.uc'):
-			if col[0] == 'S' or col[0] == 'H': #--Cluster reference sequences accordingly to vsearch cluster_fast (the longer)
+		for col in cf.readTSV(f'{args.output}.uc'):
+
+			#--Cluster reference sequences accordingly to vsearch cluster_fast (the longer)
+			if col[0] == 'S' or col[0] == 'H': 
 				cluster = col[1] #--Cluster number
-				reads = float(col[8].split('_')[-3].split('=')[1])
-				snvs = float(col[8].split('_')[-2].split('=')[1])
-				indels = float(col[8].split('_')[-1].split('=')[1])
-				quality = reads / (snvs+indels+1) #--the higher the value, the smaller the number of variants per read
+				print(col[8])
+				reads, snvs, indels, deg = [int(x.split('=')[1]) for x in col[8].split()[1:]]
+				# reads = float(col[8].split('_')[-3].split('=')[1])
+				# snvs = float(col[8].split('_')[-2].split('=')[1])
+				# indels = float(col[8].split('_')[-1].split('=')[1])
+
+				#--The higher the value, the smaller the number of variants per read. If 2 sequences has the same number of variants, the higher the number of reads, the higher the value, then, we are going to choose alwawys the best sequence (minumin number of variants with the higher number of reads)
+				variants = snvs + indels + deg
+				quality = reads / (reads + variants + 1) 
+
+				quality = reads / (snvs+indels+deg+1) 
+				print(col[8], quality)
 
 				clusters[cluster].append([col[8], quality])
 
 
-		with open(f'{args.output}_clusters.txt', 'w') as output:
-			with open(f'{args.output}_representative.fasta', 'w') as outputfasta:
+		# with open(f'{args.output}_clusters.txt', 'w') as output:
+		# 	with open(f'{args.output}_representative.fasta', 'w') as outputfasta:
 
-				output.write('N_Members\tRepresentative\tMembers\n')
-				for cluster in clusters:
-					output.write(str(len(clusters[cluster])) + '\t')
-					sorted_cluster = sorted(clusters[cluster], key = lambda x: x[1], reverse=True)
-					output.write(sorted_cluster[0][0] + '\t')
-					outputfasta.write('>{}\n{}\n'.format(sorted_cluster[0][0], fasta[sorted_cluster[0][0]]))
-					members = [seqname[0] for seqname in sorted_cluster[1:]]
-					output.write(','.join(members) + '\n')
-
-#--Functions
-def fastaRead(fasta, split_names=False):
-
-	with open(fasta, 'r') as infile:
-		
-		seq = ''
-		for line in infile:
-
-			line = line.strip()
-
-			if line.startswith(">"):
-				
-				if seq:
-
-					yield name, seq
-					seq = ''
-
-				name = line[1:]
-				if split_names: name = line.split()[0][1:]
-
-			else:
-				seq = seq + line
-
-	#--Last sequence
-	yield name, seq
-
-def runCMD(cmd):
-	out, err = subprocess.Popen(cmd, shell = True, stdout=subprocess.PIPE).communicate()
-	return out.decode()
-
-def fasta2dict(file, split_names=False):
-	
-	""" Función que recorre un fichero fasta y almacena la información en un diccionario """
-	
-	#--Variables
-	fasta = {}
-	seq = "" 
-
-	#--Recorremos el fichero que contiene las secuencias en fasta 
-	infile = open (file, 'r')
-	
-	for line in infile:
-		line = line.rstrip('\n')
-
-		if line[0] == '>':
-		
-			if seq:
-			
-				fasta[name] = seq
-				seq = ""
-				
-			name = line[1:]
-			if split_names: name = line.split()[0][1:]
-			
-		else:
-		
-			seq = seq + line
-
-	#--La última secuencia
-	fasta[name] = seq
-	infile.close()
-	
-	#--Devolvemos el diccionario
-	return fasta
-
-def readTSV(file, header=False, comments=None):
-
-	with open(file, 'r') as infile:
-
-		if header:
-
-			h = infile.readline()
-
-		for line in infile:
-
-			line = line.rstrip('\n')
-
-			if not line: #--Empty spaces
-				continue
-
-			if comments:
-
-				if line.startswith(comments):
-					continue
-
-			col = line.split('\t')
-
-			yield col
-
-def checkfile(file):
-
-	return os.path.exists(file)
-
-def checkPATH(program):
-
-	""" Return true if program is on PATH """
-
-	from shutil import which
-
-	return which(program) is not None
+		# 		output.write('N_Members\tRepresentative\tMembers\n')
+		# 		for cluster in clusters:
+		# 			output.write(str(len(clusters[cluster])) + '\t')
+		# 			sorted_cluster = sorted(clusters[cluster], key = lambda x: x[1], reverse=True)
+		# 			output.write(sorted_cluster[0][0] + '\t')
+		# 			outputfasta.write('>{}\n{}\n'.format(sorted_cluster[0][0], fasta[sorted_cluster[0][0]]))
+		# 			members = [seqname[0] for seqname in sorted_cluster[1:]]
+		# 			output.write(','.join(members) + '\n')
 
 ##########################################################################################
 if __name__ == "__main__":

@@ -21,6 +21,31 @@ def fastqRead(fastq):
 
 			yield record
 
+def fastaRead(fasta, split_names=False):
+
+	with open(fasta, 'r') as infile:
+		
+		seq = ''
+		for line in infile:
+
+			line = line.strip()
+
+			if line.startswith(">"):
+				
+				if seq:
+
+					yield name, seq
+					seq = ''
+
+				name = line[1:]
+				if split_names: name = line.split()[0][1:]
+
+			else:
+				seq = seq + line
+
+	#--Last sequence
+	yield name, seq
+
 def fasta2dict(file, split_names=False):
 	
 	""" Reads a fasta file and store sequences in a dictionary """

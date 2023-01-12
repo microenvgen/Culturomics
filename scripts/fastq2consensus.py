@@ -148,7 +148,7 @@ def main():
 
 	#--Writing output
 	with open(f'{basename}.consensus.fasta', 'w') as output:
-		consensus_name = f'{basename} READS={fasta_reads} SNVs={snvs} INDELS={indels} DEG={deg}'
+		consensus_name = f'{basename}_READS={fasta_reads}_SNVs={snvs}_INDELS={indels}_DEG={deg}'
 		output.write('>{}\n{}\n'.format(consensus_name, ''.join(consensus)))
 
 	print('>>>Done!!!')
