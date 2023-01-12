@@ -121,7 +121,7 @@ def main():
 		with open(f'{args.output}_clusters.txt', 'w') as output:
 			with open(f'{args.output}_representative.fasta', 'w') as outputfasta:
 
-				output.write('Representative\tN_Members\tMembers\n')
+				output.write('N_Members\tRepresentative\tMembers\n')
 				for cluster in clusters:
 					output.write(str(len(clusters[cluster])) + '\t')
 					sorted_cluster = sorted(clusters[cluster], key = lambda x: x[1], reverse=True)
