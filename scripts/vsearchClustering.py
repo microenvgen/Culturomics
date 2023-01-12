@@ -78,8 +78,7 @@ def main():
 	# outputs:
 		# output_prefix.uc
 
-
-	#--Parsing vsearch output (-w)
+	#--Parsing vsearch output (-p, sequence names should be: E7_Well_C9_Locus_16S_long_READS=7_SNVs=227_INDELS=22_DEG=101)
 	if args.from_fastq2consensus:
 
 		fasta = cf.fasta2dict(f'{args.output}.fasta')
@@ -89,36 +88,38 @@ def main():
 
 		for col in cf.readTSV(f'{args.output}.uc'):
 
-			#--Cluster reference sequences accordingly to vsearch cluster_fast (the longer)
-			if col[0] == 'S' or col[0] == 'H': 
+			if col[0] == 'S' or col[0] == 'H':
 				cluster = col[1] #--Cluster number
-				print(col[8])
-				reads, snvs, indels, deg = [int(x.split('=')[1]) for x in col[8].split()[1:]]
-				# reads = float(col[8].split('_')[-3].split('=')[1])
-				# snvs = float(col[8].split('_')[-2].split('=')[1])
-				# indels = float(col[8].split('_')[-1].split('=')[1])
+				seq_name = col[8]
+				reads, snvs, indels, deg = [int(x.split('=')[1]) for x in seq_name.split("_")[-4:]]
 
-				#--The higher the value, the smaller the number of variants per read. If 2 sequences has the same number of variants, the higher the number of reads, the higher the value, then, we are going to choose alwawys the best sequence (minumin number of variants with the higher number of reads)
+				#--The higher the value, the smaller the number of variants per read. 
+				#--If 2 sequences has the same number of variants, the higher the number of reads, 
+				#--the higher the value, then, we are going to choose alwawys the best sequence 
+				#--(minumin number of variants with the higher number of reads)
 				variants = snvs + indels + deg
-				quality = reads / (reads + variants + 1) 
+				quality = reads / (reads + variants) 
 
-				quality = reads / (snvs+indels+deg+1) 
-				print(col[8], quality)
+				#--Consensus built with a single sequence has no variants, but quality calculation will return q=1
+				#--To reduce the risk of chosing this sequences over other with more reads quality of consensus
+				#--with only 1 reads is assigned to 0 (q=0)
+				if reads == 1: quality = 0 
 
-				clusters[cluster].append([col[8], quality])
+				clusters[cluster].append([seq_name, quality]) #--seq_name, quality
 
 
-		# with open(f'{args.output}_clusters.txt', 'w') as output:
-		# 	with open(f'{args.output}_representative.fasta', 'w') as outputfasta:
+		with open(f'{args.output}_clusters.txt', 'w') as output:
+			output.write('N_Members\tRepresentative\tMembers\n')
 
-		# 		output.write('N_Members\tRepresentative\tMembers\n')
-		# 		for cluster in clusters:
-		# 			output.write(str(len(clusters[cluster])) + '\t')
-		# 			sorted_cluster = sorted(clusters[cluster], key = lambda x: x[1], reverse=True)
-		# 			output.write(sorted_cluster[0][0] + '\t')
-		# 			outputfasta.write('>{}\n{}\n'.format(sorted_cluster[0][0], fasta[sorted_cluster[0][0]]))
-		# 			members = [seqname[0] for seqname in sorted_cluster[1:]]
-		# 			output.write(','.join(members) + '\n')
+			with open(f'{args.output}_representatives.fasta', 'w') as outputfasta:
+
+				for cluster in clusters:
+					sorted_cluster = sorted(clusters[cluster], key = lambda x: x[1], reverse=True)
+					members = [f'{sc[0]}_Q={sc[1]:.2f}' for sc in sorted_cluster[1:]]
+
+					outputfasta.write(f'>{sorted_cluster[0][0]}_Q={sorted_cluster[0][1]:.2f}\n{fasta[sorted_cluster[0][0]]}\n')
+					output.write(f'{str(len(clusters[cluster]))}\t{sorted_cluster[0][0]}_Q={sorted_cluster[0][1]:.2f}\t{",".join(members)}\n')
+
 
 ##########################################################################################
 if __name__ == "__main__":

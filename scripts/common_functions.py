@@ -30,6 +30,8 @@ def fastaRead(fasta, split_names=False):
 
 			line = line.strip()
 
+			if not line: continue #--empty lines
+
 			if line.startswith(">"):
 				
 				if seq:
