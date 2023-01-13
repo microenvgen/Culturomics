@@ -128,6 +128,7 @@ def runexternalcommand(cmd):
 
 	""" Facilitates the running of external commands by using subprocesses """
 	import subprocess
+	# from subprocess import call, Popen, communicate
 
 	out, err = subprocess.Popen(cmd, shell = True, stdout=subprocess.PIPE).communicate()
 

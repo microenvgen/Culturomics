@@ -4,7 +4,7 @@
 ##########################################################################################
 '''
 ------------------------------------------------------------------------------------------
-Merging clusters file (from parseVsearchUC.py) and taxonomy output from mothur ()
+Merging clusters file (from vsearchClustering.py) and taxonomy output from mothur (fasta2taxo.py)
 
 Clusters output:
 N_Members	Representative	Members
@@ -25,6 +25,7 @@ all.fastq_B10_Well_H8_locus_16S_long_READS=2_SNVS=0	Bacteria(100);Proteobacteria
 import sys
 import os
 import argparse
+import common_functions as cf
 
 def main():
 
@@ -32,48 +33,19 @@ def main():
 	#--Argument
 	parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 	parser.add_argument('taxo', type = str, help = 'taxonomy file from mothur')
-	parser.add_argument('clusters', type = str, help = 'clusters fiel from parseVsearchUC.py (vsearch)')
+	parser.add_argument('clusters', type = str, help = 'clusters file from vsearchClustering.py -p (vsearch)')
 	parser.add_argument('output', type = str, help = 'output file name')
 	args = parser.parse_args()
 	##########################################################################################
-	clusters = {col[1]:col for col in readTSV(args.clusters, header=True)}
-	taxo = {col[0]:col[1] for col in readTSV(args.taxo)}
+	clusters = {col[1]:col for col in cf.readTSV(args.clusters, header=True)}
+	taxo = {col[0]:col[1] for col in cf.readTSV(args.taxo)}
 
 	with open(args.output, 'w') as output:
-		output.write("{}\t{}\t{}\t{}\n".format("Representative", "Taxonomy", "Number_of_wells", "Members"))
+		output.write("{}\t{}\t{}\t{}\n".format("Number_of_wells", "Representative", "Taxonomy", "Members"))
 
 		for rep in taxo.keys():
 			cluster_info = clusters[rep]
-			output.write("{}\t{}\t{}\t{}\n".format(rep, taxo[rep], cluster_info[0], cluster_info[2]))
-
-
-
-
-
-
-def readTSV(file, header=False, comments=None):
-
-	with open(file, 'r') as infile:
-
-		if header:
-
-			h = infile.readline()
-
-		for line in infile:
-
-			line = line.rstrip('\n')
-
-			if not line: #--Empty spaces
-				continue
-
-			if comments:
-
-				if line.startswith(comments):
-					continue
-
-			col = line.split('\t')
-
-			yield col
+			output.write("{}\t{}\t{}\t{}\n".format(cluster_info[0], rep, taxo[rep], cluster_info[2]))
 
 ##########################################################################################
 if __name__ == '__main__':
