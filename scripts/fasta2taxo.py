@@ -84,7 +84,7 @@ def main():
 		if not args.keep_temporal:
 			os.remove(f'{basename}.align')
 			os.remove(f'{basename}.align_report')
-			os.remove(f'{basename}.{db}.wang.tax.summary')
+			# os.remove(f'{basename}.{db}.wang.tax.summary')
 			# os.remove(f'{basename}.{db}.wang.taxonomy')
 
 ##########################################################################################
