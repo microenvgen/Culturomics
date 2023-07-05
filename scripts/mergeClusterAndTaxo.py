@@ -27,6 +27,10 @@ import os
 import argparse
 import common_functions as cf
 
+__author__ = "Alberto Rastrojo"
+__version_info__ = ('1','0','0')
+__version__ = '.'.join(__version_info__)
+
 def main():
 
 	##########################################################################################
@@ -35,6 +39,7 @@ def main():
 	parser.add_argument('taxo', type = str, help = 'taxonomy file from mothur')
 	parser.add_argument('clusters', type = str, help = 'clusters file from vsearchClustering.py -p (vsearch)')
 	parser.add_argument('output', type = str, help = 'output file name')
+	parser.add_argument('-v', '--version', action='version', version=__file__ + ' Version: ' + __version__)
 	args = parser.parse_args()
 	##########################################################################################
 	clusters = {col[1]:col for col in cf.readTSV(args.clusters, header=True)}
