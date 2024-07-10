@@ -40,7 +40,8 @@ def fastaRead(fasta, split_names=False):
 					seq = ''
 
 				name = line[1:]
-				if split_names: name = line.split()[0][1:]
+				if split_names: 
+					name = line.split()[0][1:]
 
 			else:
 				seq = seq + line

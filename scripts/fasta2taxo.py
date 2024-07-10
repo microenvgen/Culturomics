@@ -17,8 +17,8 @@ Requirements:
 -wget and tar for database download and decompress
 
 Outputs:
--basename.consensus.fasta
--basename.log.txt
+- basename.seed_v138_1.wang.taxonomy
+- basename.seed_v138_1.wang.tax.summary
 ------------------------------------------------------------------------------------------
 """
 ##########################################################################################
@@ -71,7 +71,7 @@ def main():
 		#--Creating counts table
 		with open(f'{basename}.count_table', 'w') as counttable:
 			counttable.write('Representative_Sequence\ttotal\n')
-			for name, seq in cf.fastaRead(fasta):
+			for name, seq in cf.fastaRead(fasta, split_names=True):
 				counttable.write(f'{name}\t1\n')
 		# {basename}.count_table
 		# cf.runexternalcommand(f'mothur "#unique.seqs(fasta={fasta}, format=count)"')
@@ -80,12 +80,12 @@ def main():
 		# {basename}.{db}.wang.tax.summary, {basename}.{db}.wang.taxonomy
 
 		print('>>>Done!!!')
+
 		#--Removing intermediate files
 		if not args.keep_temporal:
 			os.remove(f'{basename}.align')
 			os.remove(f'{basename}.align_report')
-			# os.remove(f'{basename}.{db}.wang.tax.summary')
-			# os.remove(f'{basename}.{db}.wang.taxonomy')
+			os.remove(f'{basename}.count_table')
 
 ##########################################################################################
 if __name__ == "__main__":
