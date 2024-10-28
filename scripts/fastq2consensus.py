@@ -18,7 +18,7 @@ Requirements:
 	Must be in PATH or use -m option to specify the path to containing folder
 
 -Seed database (https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.seed_v138_1.tgz)
-	It is expected to be in the current directory, otherwise it will be download
+	It is expected to be in the current directory, otherwise it will be downloaded
 
 -wget and tar for database download and decompress
 
