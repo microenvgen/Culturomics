@@ -7,6 +7,7 @@ usage="
 ${sintax}
 
 Utility:
+
 	Script for processing MinIon 16S long sequences.
 	Sequences must be in fastq format (uncompressed).
 	It takes all fastq files in the current folder and use the following protocol for each fastq file:
@@ -15,7 +16,7 @@ Utility:
 		-Creates a consensus sequence (CONSENSUSCUTOFF=50)
 		-Count nucleotide variants in consensus (SNVTHRESHOLD=0.8)
 
-	Then, all consensus sequences are clustered (CLUSTERINGTHRESHOLD=0.99) and select a representative base on then minimun number os variants detected. 
+	Then, all consensus sequences are clustered (CLUSTERINGTHRESHOLD=0.99) and select a representative base on the minimun number os variants detected. 
 
 	Finally, a taxonomical classifycation is performed with mothur using seed database
 
@@ -226,7 +227,7 @@ ${BINPATH}/mothur "#classify.seqs(fasta=${OUTPUTNAME}_representative.unique.fast
 
 #--Reporting files with no sequences
 echo "##########################################################################################"
-echo "The following were not processed as no sequences were found (before or after length filtering:"
+echo "The following were not processed as no sequences were found (before or after length filtering):"
 for f in "${NOSEQFILES[@]}"
 do
 	echo ${f}

@@ -153,7 +153,7 @@ def main():
 		#--Consensus quality calculation (q=reads/(reads+variants), variants = snvs+indels+deg, if reads = 1, q=0)
 		#	The higher the value of q, the smaller the number of variants per read.
 		#	If 2 sequences has the same number of variants, the higher the number of reads, 
-		#	the higher the value adn therefore the quality of the consensus
+		#	the higher the value and therefore the quality of the consensus
 		#	Consensus built with a single sequence has no variants, but quality calculation will return q=1
 		#	To reduce the risk of chosing this sequences over other with more reads, quality of consensus
 		#	with only 1 reads is assigned to 0 (q=0)
