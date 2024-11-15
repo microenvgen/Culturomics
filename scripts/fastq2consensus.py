@@ -9,8 +9,8 @@ Description:
 This scripts uses Mothur for building a consensus sequence using provided fastq file.
 It also analyse variants (SNVs) and Indels present in read alignment produced by Mothur.
 Output consensus sequence name will be form by the name of the input file plus the
-number of reads use to build the consensus and the number of SNV and INDES (
-E7_Well_C10_Locus_16S_long READS=5 SNVs=9 INDELS=18 DEG=14)
+number of reads use to build the consensus and the number of SNV, INDES and degenerations
+(E7_Well_C10_Locus_16S_long_READS=52_VARIANTS=6_1_0_Q=0.881, where VARIANTS={snvs}_{indels}_{deg})
 
 Requirements:
 
@@ -59,6 +59,11 @@ def main():
 	for program in ['mothur', 'wget', 'tar']:
 		if not cf.checkpath(program):
 			sys.exit(f'ERROR: {program} were not found!\n' + '#'*90)
+
+	# Input files control
+	if len(args.input_files) == 0:
+		parser.print_help()
+		sys.exit()
 
 	#--Checking database in current directory or downloading it
 	db = 'silva.seed_v138_1'

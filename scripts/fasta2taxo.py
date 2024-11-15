@@ -39,7 +39,6 @@ def main():
 	#--Argument
 	parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 	parser.add_argument('input_files', nargs="*", type = str, help = 'list or regex for input uncompressed fastq files to include')
-
 	parser.add_argument('-k', dest = 'keep_temporal', action='store_true', default = False, help = 'Use this option to keep temporal files. Default: False')
 	parser.add_argument('-v', '--version', action='version', version=__file__ + ' Version: ' + __version__)
 
@@ -49,6 +48,11 @@ def main():
 	for program in ['mothur', 'wget', 'tar']:
 		if not cf.checkpath(program):
 			sys.exit(f'ERROR: {program} were not found!\n' + '#'*90)
+
+	# Input files control
+	if len(args.input_files) == 0:
+		parser.print_help()
+		sys.exit()
 
 	#--Checking database in current directory or downloading it
 	db = 'silva.seed_v138_1'

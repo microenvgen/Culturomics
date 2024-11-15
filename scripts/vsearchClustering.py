@@ -55,6 +55,7 @@ def main():
 
 	#--Check the number of input files (>=2)
 	if len(args.input_files) < 2:
+		parser.print_help()
 		sys.exit(f'{"#"*90}\nERROR: at least 2 files must be given\n{"#"*90}')
 
 	#--Joining all sequences in a single file

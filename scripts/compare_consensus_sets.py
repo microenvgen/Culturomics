@@ -9,10 +9,10 @@ each sequence in the first input file (reference) returns the best consensus seq
 based on the Q-value between the 2 files (second file could contain more sequences, not
 present in first file, but only those sequences present in first file will be analysed). If
 a sequence is not present in second file, a warning will be shown and original sequence
-will be returned (from first file). IF both quailties values are equal first file consensus
+will be returned (from first file). If both qualities values are equal first file consensus
 will be returned.
 
-Both files must be rename as follows:
+Both files sequences must be named as follows:
 
 >A7-A11 P5_P7_i5_i7_READS=10_VARIANTS=644_710_17_Q=0.007
 ATTGAACGCTGGCGGCAGGCCTAACACATGCAAGTCKAGCGGATGANNNNAGCTTGCTCNNGNATTNAG
