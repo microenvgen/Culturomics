@@ -71,8 +71,10 @@ def main():
 		chunk = files[i:i+args.threads]
 
 		with Pool(args.threads) as p:
-			print(p.map(toy, chunk))
+			logs = p.map(toy, chunk)
 
+		for log in logs:
+			print(log)
 		# processes = []
 		# for file in chunk:
 
