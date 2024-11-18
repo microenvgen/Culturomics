@@ -48,7 +48,7 @@ __version__ = '.'.join(__version_info__)
 def main():
 	
 	##########################################################################################
-	#--Argument
+	# Argument
 	parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 	parser.add_argument('-f', dest='folder', type = str, required=True, help = 'Folder containing fastq/fq files')
 	parser.add_argument('-t', dest = 'threads', type = int, default = 1, help = 'Number of threads [1]')
@@ -64,14 +64,14 @@ def main():
 		if file.split('.')[-1] in ["fastq", "fq"]:
 			files.append(file)
 
-	#--Checking database in current directory or downloading it
+	# Checking database in current directory or downloading it
 	db = 'silva.seed_v138_1'
 	if not cf.checkfile(f'{db}.align'):
 		print(f'>>>Downloading database...')
 		cf.runexternalcommand(f'wget https://mothur.s3.us-east-2.amazonaws.com/wiki/{db}.tgz')
 		cf.runexternalcommand(f'tar -xzf {db}.tgz')
 
-	#--Creating consensus sequences for each input file
+	# Creating consensus sequences for each input file
 	for i in range(0, len(files), args.threads):
 
 		chunk = files[i:i+args.threads]
