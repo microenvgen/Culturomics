@@ -164,7 +164,7 @@ def main():
 		#	with only 1 reads is assigned to 0 (q=0)
 
 
-		# q value,as is currently formulated es not very sensitive, however, using q2 = sqrt(reads)/(sqrt(reads)+variants)
+		# q value,as is currently formulated is not very sensitive, however, using q2 = sqrt(reads)/(sqrt(reads)+variants)
 		# the q2 value is more sensitive to the number of mutations when the number of reads is larger. 
 		variants = snvs + indels + deg
 		if reads == 1:
