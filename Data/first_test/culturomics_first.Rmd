@@ -1,0 +1,95 @@
+---
+title: "culturomics_first"
+output: html_document
+date: "2024-12-16"
+---
+
+```{r , include=FALSE}
+knitr::opts_knit$set(root.dir = getwd())
+library(dada2)
+library(here)
+library(phyloseq)
+library(tidyverse)
+```
+
+
+
+First test
+```{r, message=FALSE, warning=FALSE, echo=TRUE}
+
+# File parsing
+pathF <- here("data/first_test/R1/")
+pathR <- here("data/first_test/R2/")
+filtpathF <- file.path(pathF, "filtered") # Filtered forward files go into the 
+
+#pathF/filtered/ subdirectory
+filtpathR <- file.path(pathR, "filtered")
+fastqFs <- sort(list.files(pathF, pattern="fastq.gz"))
+fastqRs <- sort(list.files(pathR, pattern="fastq.gz"))
+
+if(length(fastqFs) != length(fastqRs)) stop("Forward and reverse files do not match.")
+trimmed <- filterAndTrim(fwd=file.path(pathF, fastqFs), filt=file.path(filtpathF, fastqFs),
+              rev=file.path(pathR, fastqRs), filt.rev=file.path(filtpathR, fastqRs),
+              truncLen=c(268,218), rm.phix=TRUE,
+              compress=TRUE, verbose=TRUE)
+
+# File parsing
+filtFs <- list.files(filtpathF, pattern="fastq.gz", full.names = TRUE)
+filtRs <- list.files(filtpathR, pattern="fastq.gz", full.names = TRUE)
+# Assumes filename = samplename_XXX.fastq.gz
+sample.names <- sapply(strsplit(basename(filtFs), "_L001"), `[`, 1) 
+sample.namesR <- sapply(strsplit(basename(filtRs), "_L001"), `[`, 1) 
+
+if(!identical(sample.names, sample.namesR)) stop("Forward and reverse files do not match.")
+names(filtFs) <- sample.names
+names(filtRs) <- sample.names
+set.seed(100)
+
+# Learn error rates
+errF <- learnErrors(filtFs, nbases=1e5, multithread=TRUE)
+errR <- learnErrors(filtRs, nbases=1e5, multithread=TRUE)
+
+# Sample inference and merger of paired-end reads
+mergers <- vector("list", length(sample.names))
+names(mergers) <- sample.names
+for(sam in sample.names) {
+  cat("Processing:", sam, "\n")
+    derepF <- derepFastq(filtFs[[sam]])
+    ddF <- dada(derepF, err=errF, multithread=TRUE)
+    derepR <- derepFastq(filtRs[[sam]])
+    ddR <- dada(derepR, err=errR, multithread=TRUE)
+    merger <- mergePairs(ddF, derepF, ddR, derepR,maxMismatch = 1, minOverlap = 12)
+    mergers[[sam]] <- merger
+}
+rm(derepF); rm(derepR)
+
+# Construct sequence table and remove chimeras
+seqtab <- makeSequenceTable(mergers)
+
+# Remove chimeras
+seqtab_nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE,allowOneOff = TRUE)
+
+# Assign taxonomy
+tax <- assignTaxonomy(seqtab_nochim, here("data/silva_nr_v123_train_set.fa.gz"), multithread=TRUE)
+
+save.image("dada2_first.RData") #save image just in case
+load("dada2_first.RData")
+
+
+ps <- phyloseq(otu_table(seqtab_nochim, taxa_are_rows=FALSE), 
+                         tax_table(tax))
+
+ps <- subset_taxa(ps, Class!="Chloroplast"| is.na(Class)) 
+ps <- subset_taxa(ps, Family!="Mitochondria"| is.na(Family))
+ps <- subset_taxa(ps, Kingdom!="Eukaryota"| is.na(Kingdom))
+
+sample_sums(ps)
+ps<-rarefy_even_depth(ps,sample.size = 25000,trimOTUs = TRUE)
+
+family_level <- tax_glom(ps, taxrank = "Family")
+family_abundance <- taxa_sums(family_level)
+sorted_families <- sort(family_abundance, decreasing = TRUE)
+top_10_families <- names(sorted_families)[1:10]
+tax_table(family_level)[top_10_families]
+
+```

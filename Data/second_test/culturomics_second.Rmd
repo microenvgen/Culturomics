@@ -1,0 +1,134 @@
+---
+title: "Culturomics_second"
+output: html_document
+date: "2024-10-17"
+---
+
+Load data generated generated as part of another study (in the same way as fist_test), libraries (not all needed) and a few functions:
+```{r, include=FALSE}
+knitr::opts_knit$set(root.dir = getwd())
+datos<-"dada2multithreads.RData"
+
+
+library(dada2)
+library(phyloseq)
+library(Biostrings)
+library(tidyverse)
+library(doParallel)
+library(seqinr)
+library(DECIPHER)
+library(phangorn)
+library(microbiomeMarker)
+library(eDNAfuns)
+library(patchwork)
+library(here)
+library(networkD3)
+library(rlang)
+library(glue)
+theme_set(theme_bw())
+
+load(here(datos))
+```
+
+Load sample names etc from previous study:
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+load(here("names_phyloseq.rdata"))
+
+```
+
+Transform phyloseq object to tidy:
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+colnames(seqtab_nochim) |> 
+  map(digest::sha1) |> 
+  unlist() -> hashes
+tibble(Hash = hashes,
+       Seq = colnames(seqtab_nochim)) -> Hash_key
+
+seqtab_nochim |>
+  as.data.frame() |> 
+  rownames_to_column("sample_name") |> 
+  pivot_longer(-sample_name, names_to = "Seq", values_to = "nr") |> 
+  inner_join(Hash_key) |> 
+  select(-Seq) |> 
+  filter (nr  != 0) -> ASV_table
+```
+
+Further processing of tables needed:
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+tax |> 
+  as.data.frame() |>
+  rownames_to_column("Seq") |> 
+  as_tibble() |> 
+  inner_join(Hash_key) |> 
+  select(-Seq) -> taxonomy
+
+info.phyloseq |> 
+  as.data.frame() |> 
+  rownames_to_column("sample_name") |> 
+  as_tibble() -> metadata
+```
+
+Initial sample filtering:
+```{r}
+metadata |> 
+  filter(Passage =="Pase6") -> goodsamples
+semi_join(ASV_table, goodsamples) -> ASV_table_good
+semi_join(taxonomy, ASV_table_good) -> taxonomy_good
+
+```
+
+Retrieve original ASV sequences in the original communities to blast against culturomics results (do for S482, S524, S535):
+```{r}
+
+goodsamples |> 
+  filter(Sample =="S535") -> goodsample
+
+semi_join(ASV_table_good, goodsample) |>
+  mutate(tot= sum(nr)) |>
+  mutate( prop = round((nr/tot),3)) |> 
+  select(-tot, -nr) |>
+  filter(prop > 0.008) |>
+  inner_join(Hash_key) ->ver
+
+
+library(Biostrings)
+
+fasta <- DNAStringSet(ver$Seq)
+names(fasta) <- paste(ver$prop,"_", ver$Hash, sep="")
+writeXStringSet(fasta, "S535.fasta")
+
+```
+
+Created a blastdb with culturomics long 16S consensus sequence per well (e.g. DA_all_seqs), 
+
+then blasted the previous fasta files against the appropriate blastdb created with its corresponding culturomics sequences. e.g.:
+  /ngs/software/blast+/latest/bin/blastn \
+  -query S482.fasta \
+  -db DA \
+  -num_threads 12 \
+  -perc_identity 75 \
+  -word_size 11 \
+  -evalue 1e-23 \
+  -max_target_seqs 100 \
+  -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore staxids qlen" \
+  -out DA.txt
+
+
+Now I parse the results:
+```{r}
+
+blast_100 <- read_table(here("data", "DB.txt"), 
+           # #col_names = c("qseqid", "sseqid",  "pident", "length" ,"mismatch",
+           #               "gapopen" ,"qstart","qend", "sstart", "send" ,"evalue" ,
+           #               "bitscore", "staxid", "qlen"))
+           col_names = c("qseqid", "sseqid",  "pident", "length" ,"mismatch",
+                         "gapopen" ,"qstart","qend", "sstart", "send" ,"evalue" ,
+                         "bitscore", "staxid", "qlen"))
+
+blast_100 |> 
+  filter (pident >= 98) ->blast_100_98
+
+write_tsv(blast_100_98,"DB_blast98_culturomics.tsv")
+
+
+```

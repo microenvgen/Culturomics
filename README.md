@@ -1,6 +1,6 @@
 # Culturomics
 
-This repository will contain all scripts and pipelines related with __Culturomics__ data, from quality filtering and demultiplexing to taxonomic classification.
+This repository contains all scripts, datasets and pipelines related with Chaboy-Cansado et al's __Culturomics__ work. "Data" contains the datasets and analysis pipelines described in the manuscript. "Culturomics" contains all scripts and pipelines to automate the procedure in the OT-2 robotic platform. "Sequence analysis" contains the scripts and pipelines required for the bioinformatic processing of nanpore-derived sequences derived from the culturomics pipeline.
 
 
 
