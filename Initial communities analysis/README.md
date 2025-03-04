@@ -1,0 +1,1 @@
+This folder contains de files and script to perform the analyses carried out in the test communities described in the manuscript.
