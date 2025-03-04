@@ -1,7 +1,7 @@
 1-Description
 =
 
-Fill four 384-well plates to obtain concentrations of 0.015, 2x0.15 and 1.5 cells/100 μL using calculations performed with "c2_Dilution_Calculator.R".  
+Fill four 384-well plates to obtain concentrations of 0.015, 0.15 (two plates) and 1.5 cells/100 μL using calculations performed with "c2_Dilution_Calculator.R".  
 
 2-Settings
 = 

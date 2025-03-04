@@ -39,7 +39,7 @@ indeces = c("A" = 6,
 dil_ini = 1 # if 10, initial dilution factor is 1:10
 # It refers to how diluted the sample was before filling the plate. In other
 # words, if there was no dilution of the original sample before filling the plate,
-# write "1". If we are going to work with a flask with a sample that is 10 times
+# write "1". If we are going to work with a sample that is 10 times
 # more concentrated than the one used to fill the plate we're analysing, then
 # write "10"
 
@@ -48,12 +48,10 @@ dil_ini = 1 # if 10, initial dilution factor is 1:10
 
 dil_factor = 10 # dil_factor=10 if transfers at c1 took 20 uL into 200 uL total
 well_vol = 100  # volume inside each well, in uL
-# Es importante definir el volumen total del pocillo, porque afecta a los cálculos.
-# Si el volumen del pocillo es 200, la concentración de células será el doble para
-# que, tras añadir medio, quede a 1.5 c/100 ul. Actualmente, usamos placas de 384
-# en las que no añadimos medio, es decir, el volumen del pocillo es 100 ul y lo que 
-# añadimos son 100 ul del cultivo. 
-
+# It is important to define the total volume of the well because it affects the calculations.
+# If the well volume is 200, the cell concentration will be doubled so that, after adding medium,
+# it remains at 1.5 c/100 µl. Currently, we use 384-well plates in which we do not add medium,
+# meaning the well volume is 100 µl, and what we add is 100 µl of culture.
 wanted_final_vol = 100 # we want concentrations of 1.5, 0.15 & 0.015 cells
                        # in this volume (uL)
 
