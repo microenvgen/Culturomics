@@ -8,7 +8,7 @@ In this step we transfer selected wells from 384 plates (based on the calculatio
 The script searches for the requires files ((wells_0015 and/or wells_015 and/or wells_015b) in the robot folder (/data/user_storage/), so, before running this script the files should be copied to the robot:
 
 
-> Antes de copiar los nuevos ficheros al robot debemos borrar los antiguos:
+> Before copying the new files to the robot we must delete the old ones:
 
 ```DOS
 ssh -i C:\Users\meg_ot2\Documents\GitHub\OT2\Claves\ot2_A204_ssh_key root@169.254.53.144
@@ -16,7 +16,7 @@ cd /data/user_storage/
 rm -fr well_*
 ```
 
-> Copiamos ahora los datos como sigue:
+> We now copy the data as follows:
 
 ```DOS
 scp -i C:\Users\meg_ot2\Documents\GitHub\OT2\Claves\ot2_A204_ssh_key C:\Users\meg_ot2\Desktop\Placas_OT2\wells_* root@169.254.53.144:\data\user_storage\
@@ -82,22 +82,22 @@ _Pipette_: p300_multi_gen2 (right)
 
 ![deck](./c5_Well_Selection_part_2.svg)
 
-4-Tiempos
+4-Times
 =
-p`rimera parte
+first part
 
--41 minutos termina 
+-41 minutes ends
 
-segunda parte
+second part
 
--7 minutos: termina de echar el glicerol
+-7 minutes: finish adding glycerol
 
--23 minutos: termina de añadir las muestras a los gliceroles. cambiuo puntas
+-23 minutes: finish adding samples to glycerols. change tips
 
--34 minutos: termina de echar el buffer de lisis. pausa para pegatina y puntas. 
-1h 9 minutos pausa para quitar pegatina, si se saca al momento cuidado que quema
+-34 minutes: finish adding lysis buffer. pause for sticker and tips.
+1h 9 minutes pause to remove sticker, if you remove it right away be careful it burns
 
-1h19 minutos: termina
+1h19 minutes: ends
 
 5-CHANGELOG
 =

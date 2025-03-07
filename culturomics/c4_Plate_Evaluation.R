@@ -109,7 +109,7 @@ if (exclude_bad_neg_controls) {
 }
 
 # ==============================================================================
-# #3: Compute andshow total
+# #3: Compute and show total
 total_per_selected_plates = as.numeric(lapply(selected_plates,
                                               FUN=function(x){sum(x>threshold)}))
 total = sum(total_per_selected_plates)
