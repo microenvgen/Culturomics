@@ -1,7 +1,7 @@
 from opentrons import protocol_api
 
 metadata = {
-	'protocolName': 'Primera PCR',
+	'protocolName': 'First PCR',
 	'author': 'Alberto Rastrojo',
 	'apiLevel': '2.20',
 	'version': '1'
@@ -14,17 +14,17 @@ def add_parameters(parameters):
 
 	parameters.add_str(
 		variable_name="pcr_location",
-		display_name="PCR interna o externa",
-		description="Interna: PCR opentrons (nest full-skirt) o Externa: PCR externa (semi-skirt).",
-		default="externa",
-		choices=[   {"display_name": "interna", "value": "interna"},
-					{"display_name": "externa", "value": "externa"},]
+		display_name="PCR internal or external",
+		description="Internal: opentrons thermocycler (nest full-skirt) or External: external thermocycler (semi-skirt).",
+		default="external",
+		choices=[   {"display_name": "internal", "value": "internal"},
+					{"display_name": "external", "value": "external"},]
 	)
 
 	parameters.add_int(
 		variable_name="number_of_cycles",
-		display_name="Nº de ciclos (interna)",
-		description="Número de ciclos. Sólo si es interna. ",
+		display_name="Nº of cycles (internal)",
+		description="Number of cycles. Only if internal. ",
 		default=28,
 		minimum=1,
 		maximum=45
@@ -32,8 +32,8 @@ def add_parameters(parameters):
 
 	parameters.add_int(
 		variable_name="melting_temp",
-		display_name="TM (interna)",
-		description="Temperatura de melting. Sólo si es interna",
+		display_name="TM (internal)",
+		description="Melting temperature. Only if it is internal",
 		default=55,
 		minimum=20,
 		maximum=80
@@ -74,9 +74,9 @@ def run(protocol: protocol_api.ProtocolContext):
 	melting_temp = protocol.params.melting_temp
 
 	if pcr_location == "interna":
-		flash(f">>>>>Revisa los parámetros<<<<<< *PCR {pcr_location}* *{number_of_cycles} ciclos* *{melting_temp}ºC de TM* >>>No olvides anotar esta información en tu cuaderno de laboratorio<<<")
+		flash(f">>>>>Review the parameters<<<<<< *PCR {pcr_location}* *{number_of_cycles} cycles* *{melting_temp}ºC of TM* >>>Don't forget to write down this information in your lab notebook<<<")
 	else:
-		flash(f">>>>>Revisa los parámetros<<<<<< *PCR {pcr_location}* >>>Coloca placa semifaldón con el adaptador en la posición 7<<< El nº de ciclos y la TM los tendrás que poner correctamente en el termociclador externo que vayas a usar.>>>No olvides anotar esta información en tu cuaderno de laboratorio<<<.")
+		flash(f">>>>>Check the parameters<<<<<< *PCR {pcr_location}* >>>Place the semi-skirted plate with the adapter in position 7<<< The number of cycles and the TM must be entered correctly in the external thermal cycler you are going to use.>>>Don't forget to write this information down in your laboratory notebook<<<.")
 
 	# =============================================================================
 	# Labware
@@ -92,7 +92,7 @@ def run(protocol: protocol_api.ProtocolContext):
 	reagents = protocol.load_labware('nest_96_wellplate_100ul_pcr_full_skirt', 3)
 
 	# Loading Termocycler/output plate
-	if pcr_location == "externa":
+	if pcr_location == "external":
 		PCR = protocol.load_labware('pcr_plate_semi_skirt', 7)
 
 	else: # internal
@@ -107,7 +107,7 @@ def run(protocol: protocol_api.ProtocolContext):
 	# =============================================================================
 
 	# =============================================================================
-	cmt("#### 1. Distribuir 20 µL de las columnas 1-2 de reagent a cada pocillo de PCR")
+	cmt("#### 1. Distribute 20 µL of reagent columns 1-2 to each PCR well")
 	# =============================================================================
 	m20.pick_up_tip()
 	m20.distribute(20,
@@ -125,7 +125,7 @@ def run(protocol: protocol_api.ProtocolContext):
 	m20.drop_tip()
 
 	# =============================================================================
-	cmt("#### 2. Añadir 5 µl de ADN  template")
+	cmt("#### 2. Add 5 µl of template DNA")
 	# =============================================================================
 	m20.transfer(5,
 				source = template.wells(),
@@ -138,13 +138,13 @@ def run(protocol: protocol_api.ProtocolContext):
 	# Correr PCR o avisar del final
 	# =============================================================================
 
-	if pcr_location == "externa":
-		flash("#### 3. Guardar template, poner pegatina a placa PCR y poner en termociclador externo")
+	if pcr_location == "external":
+		flash("#### 3. Save template, put sticker on PCR plate and put in external thermal cycler")
 
 	else:
-		flash("#### 3. Guardar template y poner pegatina a placa PCR")
+		flash("#### 3. Save template and put sticker on PCR plate")
 
-		cmt("#### 4. Ejecutando programa de PCR...")
+		cmt("#### 4. Running PCR program...")
 		protocol.set_rail_lights(False)
 
 		tc_mod.close_lid()
@@ -161,7 +161,7 @@ def run(protocol: protocol_api.ProtocolContext):
 		tc_mod.open_lid()
 
 		protocol.set_rail_lights(True)
-		flash("#### 5. FIN: repega la pegatina, anota el label y guarda la placa, limpia la silicona bien y deja el robot impoluto")
+		flash("#### 5. END: Re-stick the sticker, write down the label and save the plate, clean the silicone well and leave the robot spotless")
 
 	# =============================================================================
 	# END

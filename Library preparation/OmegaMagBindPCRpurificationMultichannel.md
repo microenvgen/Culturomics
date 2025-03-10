@@ -5,15 +5,15 @@ PCR (or DNA) purification using magnetic beads (Omega Bio-Tek Mag-Bind TotalPure
 Estimated running time: 1h:37m (96 samples)  Pausa a 1h 14 min
 
 
-**Tip isolator preparation**: rinse opentrons tips rack with 0.1 N HCl and wash 3 times with MQ water. Finally, autoclave the rack enveloped with aluminiun foil. 
+**Tip isolator preparation**: Prepare a clean empty 300ul opentrons tiprack (rinse opentrons tips rack with 0.1 N HCl and wash 3 times with MQ water). Wrap it in aluminum foil and autoclave it. When you put it in the drying oven, remove the aluminum foil so that it dries better.
 
 > IMPORTANT: use a tip rack with tips to calibrate tip isolator, and change it before starting the protocol (there is a pause)  
 
-> **IMPORTANTE**: Tras la calibración hay una pausa y el propio script calcula los volúmenes necesarios que hay que añadir en el reservorio. No añadir nada hasta que el robot te lo indique.  
+> **IMPORTANT**: After calibration there is a pause and the script itself calculates the necessary volumes to add to the reservoir. Do not add anything until the robot tells you to.
 
-> **BEADS**: Las beads se preparan en una placa de PCR con los scripts prepare_MagneticBeadsPlate_highVol.py o prepare_MagneticBeadsPlate_lowVol.py dependiendo del volumen necesario por pocillo, que dependerá del ratio de bolitas que se desee usar. Generalmente usamos un ratio de 0.85 y dado que el volumen de PCR que ponemos es 20, el volumen de bolitas debe ser 17 ul (PCR_volume * beads_ratio).   
+> **BEADS**: Beads are prepared on a PCR plate using the scripts prepare_MagneticBeadsPlate_highVol.py or prepare_MagneticBeadsPlate_lowVol.py depending on the volume needed per well, which will depend on the bead ratio you want to use. We generally use a ratio of 0.85 and since the PCR volume we put is 20, the bead volume must be 17 ul (PCR_volume * beads_ratio).
 
-> **QUITAR PUNTAS**: Si una columna de muestras no está completa se podría optar por quitar puntas (sólo las que van a pipetear las bolitas). El orden de las cajas de puntas es slot 5, 6, 7 y 8. Primero añade el agua al tip_isolator con una columna de puntas. Luego añade las bolitas. Si tenemos 3 columnas (la tercera incompleta), habrá que quitar las puntas de la 4ª columna del slot 5. Es decir, habrá que quitar las puntas de la columna + 1 (porque primero gasta 1 columna con el agua). Si la columna incompleta es la 12, habrá que quitar las puntas de la columna 1 del slot 6. **Verificar esto**
+> **REMOVE TIPS**: If a sample column is not complete, you may choose to remove tips (only those that will pipette the beads). The order of the tip boxes is slot 5, 6, 7 and 8. First add the water to the tip_isolator with a column of tips. Then add the beads. If we have 3 columns (the third one incomplete), we will have to remove the tips from the 4th column of slot 5. That is, we will have to remove the tips from column + 1 (because it first uses 1 column with water). If the incomplete column is 12, we will have to remove the tips from column 1 of slot 6. **Verify this**
 
 
 2-Settings
@@ -75,26 +75,26 @@ Right\) p300_multi_gen2
 
 ### V5
 
-- Añado una variable para elegir el formato de placa de entrada (input): [nest_96_wellplate_100ul_pcr_full_skirt](https://labware.opentrons.com/nest_96_wellplate_100ul_pcr_full_skirt?category=wellPlate&manufacturer=NEST) \[Default\] o [pcr_plate_semi_skirt](https://github.com/microenvgen/OT2/blob/426f8d04e7917903d9d31d308ecbcd8541383280/custom_labware/pcr_plate_semi_skirt.md).  
+- I add a variable to choose the input plate format: [nest_96_wellplate_100ul_pcr_full_skirt](https://labware.opentrons.com/nest_96_wellplate_100ul_pcr_full_skirt?category=wellPlate&manufacturer=NEST) \[Default\] o [pcr_plate_semi_skirt](https://github.com/microenvgen/OT2/blob/426f8d04e7917903d9d31d308ecbcd8541383280/custom_labware/pcr_plate_semi_skirt.md).  
 
-> No puedo meterlo como parámetro en la app porque necesito usar la apiLevel=2.9 para que funcione el tip_isolator.  
+> I can't put it as a parameter in the app because I need to use apiLevel=2.9 for tip_isolator to work.
 
 ### V4
 
-Las magnetic beads ya no se ponen en el reservorio sino que hay que preparar una placa de PCR con la cantidad de beads por pocillo requeridas usando el protocolo "prepare_MagneticBeadsPlate_highVol.py" o "prepare_MagneticBeadsPlate_lowVol.py". Esta placa se colocará sobre el módulo magnético. La placa con las muestras (PCRs) se colocará en el slot 10. Entonces, el robot transfiere las muestas de la placa de entrada al magnético donde entrarán en contacto con las magnetic beads.
+Magnetic beads are no longer placed in the reservoir, but a PCR plate with the required number of beads per well must be prepared using the "prepare_MagneticBeadsPlate_highVol.py" or "prepare_MagneticBeadsPlate_lowVol.py" protocol. This plate will be placed on the magnetic module. The plate with the samples (PCRs) will be placed in slot 10. Then, the robot transfers the samples from the input plate to the magnetic plate where they will come into contact with the magnetic beads.
 
-Modicamos el paso 2: en lugar de incubar 5 minutos, mezclamos las muestras con las bolitas 2 veces (5 repeticiones de 150 ul).
+We modified step 2: instead of incubating for 5 minutes, we mix the samples with the beads 2 times (5 repetitions of 150 ul).
 
 ### V3
 
-Durante la transferencia del eluido a la placa final hemos observado que goteo. Para evitarlo añadimos algunos cambios:
-- Metemos un air_gap de 5 ul para que no gotee del iman a la placa de salida
-- Añadimos un blow_out en la placa de salida
-- Añadimos una agitación de la pipeta en la placa de salida para que caigan las gotas restantes
+During the transfer of the eluate to the final plate we have observed that it drips. To avoid this we have added some changes:
+- We put a 5 ul air_gap so that it does not drip from the magnet to the output plate
+- We add a blow_out on the output plate
+- We add a pipette agitation on the output plate so that the remaining drops fall
 
-### V2  
+### V2 
 
-Añado cálculo del número de cajas de puntas necesarias para no tener que ponerlas todas. 
+I add a calculation of the number of tip boxes needed so that I do not have to put them all in.
 
 ### V1  
 

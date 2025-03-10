@@ -10,7 +10,7 @@ This script is based on the protocol described in:
 > Lysis time: no more than 10 minutes  
 > Stop buffer adding: no more than 5 minutes after heating  
 
-**Tip isolator preparation**: preparar base de cajas de 20 (la base es igual a todas) con el portapuntas de 300. Sellarla, envolverla en papel albal y autoclavar. Al meterla en la estufa quitarle el papel albal para que se seque mejor. 
+**Tip isolator preparation**: Prepare a clean empty 300ul opentrons tiprack (rinse opentrons tips rack with 0.1 N HCl and wash 3 times with MQ water). Wrap it in aluminum foil and autoclave it. When you put it in the drying oven, remove the aluminum foil so that it dries better.
 
 > IMPORTANT: use a tip rack with tips to calibrate tip isolator, and change it before starting the protocol (there is a pause)
 
@@ -35,15 +35,14 @@ In order to avoid contamination due to the manipulation of the magnetic beads we
 Estimated running time: 1h:53m  
 
 
-### Tiempos
-5 minutos: pausa para sellar la placa y llevarla al -80. Si se va a continuar en el momento darle a resume run, llenará el tip isolator y calentará el bloque térmico. Mientras tanto, se sella la placa, se vortexea se centrifuga y se guarda en el -80 10 minutos.
+### Time
+5 minutes: pause to seal the plate and bring it to -80. If you are going to continue at this point, press resume run, it will fill the tip isolator and heat the thermal block. Meanwhile, seal the plate, vortex, centrifuge and store at -80 for 10 minutes.
 
-19 minutos: Se pone la placa y se da a continuar. 4 minutos de espera. 
+19 minutes: Place the plate and press continue. Wait 4 minutes.
 
-23,39: añade buffer de stop
+23.39: add stop buffer
 
-
-30: añade bolitas
+30: add beads
 
 2-Settings
 = 
@@ -90,15 +89,15 @@ Right\) p300_multi_gen2
 
 ### V3
 
-Las magnetic beads ya no se ponen en el reservorio sino que hay que preparar una placa de PCR con la cantidad de beads por pocillo requeridas usando el protocolo "prepare_MagneticBeadsPlate_highVol.py". Esta placa se colocará sobre el módulo magnético. Las muestras, que se colocan en el módulo térmico inicialmente, tras la lisis y la neutralización se vuelven a colocan sobre el bloque térmico. Entonces, el robot transfiere las muestas del bloque térmico al magnético donde entrarán en contacto con las magnetic beads.
+Magnetic beads are no longer placed in the reservoir, but a PCR plate with the required number of beads per well must be prepared using the "prepare_MagneticBeadsPlate_highVol.py" protocol. This plate will be placed on the magnetic module. The samples, which are initially placed in the thermal module, are then placed back on the thermal block after lysis and neutralization. The robot then transfers the samples from the thermal block to the magnetic block where they will come into contact with the magnetic beads.
 
-Por otro lado, durante la recuperación de DNA tras la elución se ha modificado el protocolo para que pipetee en varias alturas para recuperar el máximo volumen posible. 
+On the other hand, during DNA recovery after elution, the protocol has been modified to pipette at various heights to recover the maximum possible volume. 
 
-Modicamos el paso 6: en lugar de incubar 5 minutos, mezclamos las muestras con las bolitas 2 veces (5 repeticiones de 150 ul).
+We modified step 6: instead of incubating for 5 minutes, we mix the samples with the beads 2 times (5 repetitions of 150 ul).
 
 ### V2
 
-Añadimos opción para elegir el número de columnas a procesar por el protocolo
+We added an option to choose the number of columns to be processed by the protocol
 
 ### V1
 

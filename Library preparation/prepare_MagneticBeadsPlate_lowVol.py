@@ -60,7 +60,7 @@ def run(protocol):
 	# Calculating required beads volumen
 	# =============================================================================
 	required_beads_vol = (beads_vol * 8 * number_of_columns) + 500
-	flash(f"### Prepara un F50 con faldón con {required_beads_vol} ul de magnetic beads y colocalo en la posición A1 del adaptador de tubos F50")
+	flash(f"### Prepare a skirted F50 with {required_beads_vol} ul of magnetic beads and place it in position A1 of the F50 tube adapter")
 
 	# =============================================================================
 	# Distribuiting magnetics beads
