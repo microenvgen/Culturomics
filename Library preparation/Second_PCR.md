@@ -1,7 +1,7 @@
 Description
 =
 
-Generic protocol for performing the second PCR with the robot (using the robot's own thermocycler or an external one).
+Generic protocol for performing the second barcoded PCR with the robot (using the robot's own thermocycler or an external one).
 
 **Parameters:**
 
