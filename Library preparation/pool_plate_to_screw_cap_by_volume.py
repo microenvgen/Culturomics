@@ -2,12 +2,21 @@ from opentrons import protocol_api
 from opentrons.protocol_api import RuntimeParameterRequiredError
 
 """
-- Usar plantilla en excel para poner los volumenes (pool_plate_to_screw_cap_by_volume.xlsx)
+- Usar plantilla en excel para poner los volumenes a poolear (pool_plate_to_screw_cap_by_volume_example.xlsx). -1 significa que no coge volumen, introducir valor de volumen a poolear entre 2-10ul.
 - Exportar como CSV
-- Cambiar "," por "." en sublime text o donde 
+- Si es necesario, cambiar "," por "." en sublime text o donde sea.
 - Cargar el CSV como parámetro
 
-> En el epp screw cap de 1.5 ml poner 20 ul de NFW para que no pipetee en vació la primera vez
+> En el epp screw cap de 1.5 ml poner 20 ul de agua libre de ADN y DNAsas para que no pipetee en vació la primera vez.
+
+
+- Use the excel template to set the volumes to be pooled (pool_plate_to_screw_cap_by_volume_example.xlsx). "-1" means no volume, enter the volume value to be pooled between 2-10ul.
+- Export as CSV
+- If necessary, change "," to "." in sublime text or similar.
+- Load the CSV as a parameter
+
+> In the 1.5 ml epp screw cap put 20 ul of DNA and DNAse-free water so that it does not pipet empty the first time.
+
 """
 
 
@@ -109,7 +118,7 @@ def run(protocol: protocol_api.ProtocolContext):
 			# raw_csv_data = [[row1,..], [row2,...]]
 			raw_csv_data = protocol.params.csv_file.parse_as_csv(delimiter=";")
 		except RuntimeParameterRequiredError as error:
-			flash(f"#### NO SE ESTÁ LEYENDO EL FICHERO. ERROR:{error}")
+			flash(f"#### FILE IS NOT BEING READ. ERROR:{error}")
 
 	else: # simulating & test data
 		raw_csv_data = [
@@ -136,9 +145,9 @@ def run(protocol: protocol_api.ProtocolContext):
 		row = row_data[0]
 		for col, vol in enumerate(row_data[1:13]): #-- skip first column (row_name)
 			if float(vol) != -1 and float(vol) < 2:
-				flash("<<<ERROR: hay un volúmen menor de 2 ul>>>")
+				flash("<<<ERROR: there is a volume less than 2 ul>>>")
 			elif float(vol) != -1 and float(vol) > 10:
-				flash("<<<ERROR: hay un volúmen mayor de 10 ul>>>")
+				flash("<<<ERROR: there is a volume greater than 10 ul>>>")
 			else:
 				well = row + str(col+1)
 				volumes[well] = float(vol)
@@ -146,9 +155,9 @@ def run(protocol: protocol_api.ProtocolContext):
 					total_vol += float(vol)
 
 	if total_vol > 1480:
-		flash("<<<ERROR: volume excesivo>>>")
+		flash("<<<ERROR: excessive volume>>>")
 	else:
-		flash(f"<<<VOLUMEN TOTAL: {total_vol}, ¿Es correcto?>>>")
+		flash(f"<<<TOTAL VOLUME: {total_vol}, Is this correct?>>>")
 
 	# =============================================================================
 	cmt("#### 2. Transferring samples to pool.")
