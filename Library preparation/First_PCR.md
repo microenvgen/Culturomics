@@ -35,13 +35,13 @@ Generic protocol for performing PCR with the robot (using the robot's own thermo
 | H2O (NFW/A)       |      -     |     -     |    -    |     13,25    |    1445   |
 |                   |            |           |         | Vol total--> |    2180   |
 
-8. Repartir mezcla de reacción en las 2 primeras columnas de una placa de PCR Nest full-skirt y colocar en slot 3 (133 ul por pocillo).  
-9. Colocar placa con el ADN molde ("template") en el slot 4 (darle un spin de 1 min antes).  
-10. Lanzar el script Primera_PCR.py
-	- Primero distribuye 20 ul de la mezcla de reacción de PCR en la placa de PCR
-	- Añade 5 ul de la placa de molde a la placa de PCR
-	- Si la PCR es externa el protocolo termina aquí. Hay que sellar la placa de PCR y llevarla el termociclador externo. También hay que sellar y conservar la placa de ADN molde convenientemente.  
-	- Si la PCR es interna hay que sellar la placa de PCR y darle a continuar para que se ejecute el protocolo de PCR. Mientras se ejecuta el protocolo de PCR se puede recoger la placa de ADN molde y el resto de labwares.  
+8. Distribute the reaction mix into the first 2 columns of a full-skirt Nest PCR plate and place it in slot 3 (133 µl per well).
+9. Place the template DNA plate in slot 4 (spin for 1 minute beforehand).
+10. Run the Primera_PCR.py script.
+- First, distribute 20 µl of the PCR reaction mix onto the PCR plate.
+- Add 5 µl of the template plate to the PCR plate.
+- If the PCR is external, the protocol ends here. The PCR plate must be sealed and transferred to the external thermal cycler. The template DNA plate must also be sealed and stored properly.
+- If the PCR is internal, seal the PCR plate and press Continue to run the PCR protocol. While the PCR protocol is running, you can collect the template DNA plate and the rest of the labware.
 
 8. Distribute the reaction mix in the first 2 columns of a full-skirt Nest PCR plate and place in slot 3 (133 ul per well). 
 9. Place the plate with the template DNA in slot 4 (give it a spin for 1 min beforehand). 
